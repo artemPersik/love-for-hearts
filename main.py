@@ -77,11 +77,11 @@ class Scene_objects:
 
     # тут лежат кнопочки для менюшки
     def scene_buttons(self):
-        go.render(70, 65, "menu_button1.png", "menu_button2.png")
-        go.render(70, 265, "menu_button1.png", "menu_button2.png")
-        go.render(70, 465, "menu_button1.png", "menu_button2.png")
-        go.render(70, 665, "menu_button1.png", "menu_button2.png")
-        go.render(70, 865, "menu_button1.png", "menu_button2.png")
+        go.render(70, 65, "new game.png", "new game2.png")
+        go.render(70, 265, "continue.png", "continue2.png")
+        go.render(70, 465, "options.png", "options2.png")
+        go.render(70, 665, "authors.png", "authors2.png")
+        go.render(70, 865, "quit.png", "quit.png")
 
 
 if __name__ == '__main__':
