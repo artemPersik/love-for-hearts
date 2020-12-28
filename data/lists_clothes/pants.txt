@@ -1,0 +1,12 @@
+/pants/ pants1.png
+/pants/ pants2.png
+/pants/ pants3.png
+/pants/ pants4.png
+/pants/ pants5.png
+/pants/ pants6.png
+/pants/ pants7.png
+/pants/ pants8.png
+/pants/ pants9.png
+/pants/ pants10.png
+/pants/ pants11.png
+/pants/ pants12.png
