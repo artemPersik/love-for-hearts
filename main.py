@@ -1,3 +1,4 @@
+from random import choice, randint
 import pygame
 import sys
 import os
@@ -12,28 +13,14 @@ def load_image(name, path='', colorkey=None):
     return image
 
 
-def draw_image(name, X, Y, colorkey=None):
-    all_sprites = pygame.sprite.Group()
-    sprite = pygame.sprite.Sprite()
-    sprite.image = name
-    sprite.rect = sprite.image.get_rect()
-    all_sprites.add(sprite)
-    sprite.rect.x = X
-    sprite.rect.y = Y
-    all_sprites.draw(screen)
-
-
-IMAGES = {"new_game": load_image("new game.png", "/buttons"),
-          "new_game2": load_image("new game2.png", "/buttons"),
-          "continue": load_image("continue.png", "/buttons"),
-          "continue2": load_image("continue2.png", "/buttons"),
-          "options": load_image("options.png", "/buttons"),
-          "options2": load_image("options2.png", "/buttons"),
-          "authors": load_image("authors.png", "/buttons"),
-          "authors2": load_image("authors2.png", "/buttons"),
-          "quit": load_image("quit.png", "/buttons"),
-          "quit2": load_image("quit2.png", "/buttons"),
-          "para": load_image("para2.png")}
+def load_clothes(name):
+    fullname = os.path.join(f'data\\lists_clothes', name)
+    if not os.path.isfile(fullname):
+        print(f"Файл с одеждой '{fullname}' не найден")
+        sys.exit()
+    with open(fullname, 'r', encoding='utf8') as file:
+        lines = map(lambda x: x.rstrip().split(), file.readlines())
+    return lines
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -51,9 +38,9 @@ class Button(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, width, height, pass_image, direct_image, clicked_image, func):
         super().__init__(button_group, all_sprites)
 
-        self.pass_image = pygame.transform.scale(pass_image, (width, height))
-        self.direct_image = pygame.transform.scale(direct_image, (width, height))
-        self.clicked_image = pygame.transform.scale(clicked_image, (width, height))
+        self.pass_image = pygame.transform.scale(load_image(pass_image), (width, height))
+        self.direct_image = pygame.transform.scale(load_image(direct_image), (width, height))
+        self.clicked_image = pygame.transform.scale(load_image(clicked_image), (width, height))
         self.image = self.pass_image
         self.rect = self.image.get_rect().move(pos_x, pos_y)
         self.mask = pygame.mask.from_surface(self.image)
@@ -124,50 +111,127 @@ class Button(pygame.sprite.Sprite):
         self.func = func
 
 
-class AnimatedSprite(pygame.sprite.Sprite):
-    def __init__(self, sheet, columns, rows, x, y):
-        super().__init__(all_sprites)
-        self.frames = []
-        self.cut_sheet(sheet, columns, rows)
-        self.cur_frame = 0
-        self.image = self.frames[self.cur_frame]
-        self.rect = self.rect.move(x, y)
+class Hair(pygame.sprite.Sprite):
+    def __init__(self, pos_x=889, pos_y=70):
+        super().__init__(man_group, all_sprites)
 
-    def cut_sheet(self, sheet, columns, rows):
-        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
-                                sheet.get_height() // rows)
-        for j in range(rows):
-            for i in range(columns):
-                frame_location = (self.rect.w * i, self.rect.h * j)
-                self.frames.append(sheet.subsurface(pygame.Rect(
-                    frame_location, self.rect.size)))
+        self.image = choice(HAIRS)
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
 
     def update(self):
-        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
-        self.image = self.frames[self.cur_frame]
+        self.image = choice(HAIRS)
+
+
+class Face(pygame.sprite.Sprite):
+    def __init__(self, pos_x=837, pos_y=98):
+        super().__init__(man_group, all_sprites)
+
+        self.image = choice(FACES)
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def update(self):
+        self.image = choice(FACES)
+
+
+class Body(pygame.sprite.Sprite):
+    def __init__(self, pos_x=837, pos_y=253):
+        super().__init__(man_group, all_sprites)
+
+        self.image = choice(BODIES)
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def update(self):
+        self.image = choice(BODIES)
+
+
+class Pants(pygame.sprite.Sprite):
+    def __init__(self, pos_x=889, pos_y=596):
+        super().__init__(man_group, all_sprites)
+
+        self.image = choice(PANTS)
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def update(self):
+        self.image = choice(PANTS)
+
+
+class Man:
+    def __init__(self, body, face, pants, hair):
+        self.body, self.face, self.pants, self.hair = body, face, pants, hair
+        self.specifications = {'Стата1': randint(-10, 10), 'Сатата2': randint(-10, 10),
+                               'Стата3': randint(-10, 10), 'Сатата4': randint(-10, 10)}
+
+    def update_man(self):
+        man_group.update()
+        self.specifications = {'Стата1': randint(-10, 10), 'Сатата2': randint(-10, 10),
+                               'Стата3': randint(-10, 10), 'Сатата4': randint(-10, 10)}
+
+    def accept_man(self):
+        player.accept(self.specifications)
+        self.update_man()
+
+    def reject_man(self):
+        self.update_man()
+
+    def render(self, screen):
+        text = [f'{item[0]}: {item[1]}' for item in self.specifications.items()]
+        font = pygame.font.Font(None, 70)
+        text_coord = 107
+        for line in text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 124
+            intro_rect.top = text_coord
+            intro_rect.x = 1258
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+
+
+class Player:
+    def __init__(self, num1=5, num2=5, num3=5, num4=5):
+        self.specifications = {'Стата1': num1, 'Сатата2': num2, 'Стата3': num3, 'Сатата4': num4}
+
+    def accept(self, man_specifications):
+        self.specifications = dict((key, self.specifications[key] + man_specifications[key])
+                                   for key in man_specifications.keys())
+
+    def render(self, screen):
+        text = [f'{item[0]}: {item[1]}' for item in self.specifications.items()]
+        font = pygame.font.Font(None, 70)
+        text_coord = 107
+        for line in text:
+            string_rendered = font.render(line, 1, pygame.Color('black'))
+            intro_rect = string_rendered.get_rect()
+            text_coord += 124
+            intro_rect.top = text_coord
+            intro_rect.x = 70
+            text_coord += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
 
 
 pygame.init()
 size = WIDTH, HEIGHT = 1920, 1080
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-screen = pygame.display.set_mode(size, pygame.RESIZABLE)
+screen = pygame.display.set_mode(size)
 all_sprites = pygame.sprite.Group()
+man_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
+FACES = list(map(lambda x: load_image(x[1], x[0]), load_clothes('faces.txt')))
+HAIRS = list(map(lambda x: load_image(x[1], x[0]), load_clothes('hairs.txt')))
+BODIES = list(map(lambda x: load_image(x[1], x[0]), load_clothes('T-shirts.txt')))
+PANTS = list(map(lambda x: load_image(x[1], x[0]), load_clothes('pants.txt')))
 cursor_image = load_image('cursor.png')
-para = load_image("para2.png")
+empty_image = load_image('empty.png')
 
-new_game_b = Button(70, 65, 600, 150, IMAGES["new_game"], IMAGES["new_game2"], IMAGES["new_game2"], quit)
-continue_b = Button(70, 265, 600, 150, IMAGES["continue"], IMAGES["continue2"], IMAGES["continue2"], quit)
-options_b = Button(70, 465, 600, 150, IMAGES["options"], IMAGES["options2"], IMAGES["options2"], quit)
-authors_b = Button(70, 665, 600, 150, IMAGES["authors"], IMAGES["authors2"], IMAGES["authors2"], quit)
-quit_b = Button(70, 865, 600, 150, IMAGES["quit"], IMAGES["quit2"], IMAGES["quit2"], quit)
-heart = AnimatedSprite(load_image("heart.png"), 6, 2, 1100, 53)
+man = Man(Body(), Face(), Pants(), Hair())
+player = Player()
 
+reject_button = Button(611, 950, 300, 75, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', man.reject_man)
+accept_button = Button(1023, 950, 300, 75, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', man.accept_man)
 cursor = Cursor()
 
 clock = pygame.time.Clock()
-FPS = 60
+FPS = 50
 running = True
 pygame.mouse.set_visible(False)
 
@@ -176,9 +240,14 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         button_group.update(event)
-    screen.fill(pygame.Color("#DF1479"))
-    draw_image(IMAGES["para"], 900, 53)
+
+    screen.fill('#DF1479')
+
+    man.render(screen)
+    player.render(screen)
     all_sprites.draw(screen)
-    all_sprites.update()
-    clock.tick(FPS)
+
+    cursor.update()
     pygame.display.flip()
+
+pygame.quit()
