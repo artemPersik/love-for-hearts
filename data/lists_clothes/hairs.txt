@@ -1,5 +1,7 @@
-/hairs/ hair1.png
-/hairs/ hair2.png
-/hairs/ hair3.png
-/hairs/ hair4.png
-/hairs/ hair5.png
+/hairs/
+hair1.png
+hair2.png
+hair3.png
+hair4.png
+hair5.png
+hair6.png
