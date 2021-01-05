@@ -1,0 +1,4 @@
+/faces/ face1.png
+/faces/ face2.png
+/faces/ face3.png
+/faces/ face4.png

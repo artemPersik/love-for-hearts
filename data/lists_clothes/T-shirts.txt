@@ -1,0 +1,16 @@
+/T-shirts/ T-shirt1.png
+/T-shirts/ T-shirt2.png
+/T-shirts/ T-shirt3.png
+/T-shirts/ T-shirt4.png
+/T-shirts/ T-shirt5.png
+/T-shirts/ T-shirt6.png
+/T-shirts/ T-shirt7.png
+/T-shirts/ T-shirt8.png
+/T-shirts/ T-shirt9.png
+/T-shirts/ T-shirt10.png
+/T-shirts/ T-shirt11.png
+/T-shirts/ T-shirt12.png
+/T-shirts/ T-shirt13.png
+/T-shirts/ T-shirt14.png
+/T-shirts/ T-shirt15.png
+/T-shirts/ T-shirt16.png
