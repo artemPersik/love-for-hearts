@@ -16,11 +16,25 @@ def terminate():
     sys.exit()
 
 
-def restart_game(player, man):
-    player.save_progress(True)
-    man.save_progress(True)
-    man.load_from_save()
-    player.load_from_save()
+def restart_game():
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_man'
+    keys = ['gender', 'age', 'name', 'characters', 'job', 'property', 'happiness_value', 'wealth_value',
+            'compatibility_value', 'character_value', 'body', 'face', 'hair', 'pants']
+
+    for key in keys:
+        config.set(section, key, 'None')
+
+    section = 'section_player'
+    keys = ['gender', 'gender_partner', 'age', 'characters', 'characters_partner', 'happiness_value',
+            'wealth_value', 'compatibility_value', 'character_value']
+
+    for key in keys:
+        config.set(section, key, 'None')
+
+    with open('save.ini', 'w', encoding='utf8') as configfile:
+        config.write(configfile)
 
 
 def load_image(name, path='', colorkey=None):
@@ -62,9 +76,12 @@ def main_game():
                 save_game_progress(player, man)
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
-                restart_game(player, man)
+                restart_game()
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                all_sprites.empty()
+                button_group.empty()
+                man_group.empty()
                 return
             button_group.update(event)
 
@@ -79,18 +96,49 @@ def main_game():
 
 
 def pause_menu():
-    pass
+    continue_button = Button(660, 100, 600, 150, 'continue.png', 'continue2.png', 'continue2.png', None)
+    restart_button = Button(660, 300, 600, 150, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', None)
+    quit_button = Button(660, 500, 600, 150, 'quit.png', 'quit2.png', 'quit2.png', terminate)
+
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                terminate()
+
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
+                terminate()
+
+            if continue_button.is_mouse_button_up(event):
+                all_sprites.empty()
+                button_group.empty()
+                return
+
+            if restart_button.is_mouse_button_up(event):
+                all_sprites.empty()
+                button_group.empty()
+                restart_game()
+                return
+            button_group.update(event)
+
+        screen.fill('#DF1479')
+        all_sprites.draw(screen)
+
+        cursor.update()
+        pygame.display.flip()
 
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self):
-        super().__init__(all_sprites)
+        super().__init__()
         self.image = cursor_image
         self.rect = self.image.get_rect()
 
     def update(self):
         if pygame.mouse.get_focused():
             self.rect.x, self.rect.y = pygame.mouse.get_pos()
+
+        if self not in all_sprites:
+            all_sprites.add(self)
 
 
 class AllSprites(pygame.sprite.Group):
@@ -119,7 +167,8 @@ class Button(pygame.sprite.Sprite):
     def update(self, *events):
         if events and self.is_mouse_button_up(events[0]):
             self.image = self.clicked_image
-            self.func()
+            if self.func is not None:
+                self.func()
         elif self.is_mouse_button_down():
             self.image = self.clicked_image
         elif self.is_direct():
@@ -273,7 +322,7 @@ class Man:
         keys = ['gender', 'age', 'name', 'characters', 'job', 'property', 'happiness_value', 'wealth_value',
                 'compatibility_value', 'character_value', 'body', 'face', 'hair', 'pants']
         for key in keys:
-            eval(f'self.set_{key}(config.get(section, key))')
+            getattr(self, f'set_{key}')(config.get(section, key))
         self.update_specifications()
         self.update_description()
 
@@ -539,7 +588,7 @@ class Player:
         config.read('save.ini', encoding='utf8')
         section = 'section_player'
         values = [('gender', self.gender), ('gender_partner', self.gender_partner), ('age', str(self.age)),
-                  ('characters', ' '.join(self.characters)), ('character_partners', ' '.join(self.characters_partner)),
+                  ('characters', ' '.join(self.characters)), ('characters_partner', ' '.join(self.characters_partner)),
                   ('happiness_value', str(self.specifications['Счастье'])),
                   ('wealth_value', str(self.specifications['Достаток'])),
                   ('compatibility_value', str(self.specifications['Совместимость'])),
@@ -561,7 +610,7 @@ class Player:
                 'wealth_value', 'compatibility_value', 'character_value']
 
         for key in keys:
-            eval(f'self.set_{key}(config.get(section, key))')
+            getattr(self, f'set_{key}')(config.get(section, key))
 
     def set_gender(self, gender):
         if gender != 'None':
@@ -655,4 +704,6 @@ clock = pygame.time.Clock()
 pygame.mouse.set_visible(False)
 FPS = 50
 
-main_game()
+while True:
+    main_game()
+    pause_menu()
