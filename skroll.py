@@ -2,16 +2,8 @@ import pygame
 import sys
 import os
 
-CHARACTERS = ['алкаголик', 'жадина', 'злобный', 'раздрожительный', 'высокаомерный', 'лицимер', 'эгоистичен',
-              'жесток', "ленивый", 'жизнерадостный', 'реалист', 'ЗОЖник', 'щедрый', 'добрый', 'спокойный', 'скромный',
-              'прямолинейный', 'заботливый', 'добрый',
-              "активный"]
-
-#BUTTONS = ["1.png", "2.png", "3.png", "4.png", "5.png", "6.png", "7.png"]
-
-
-
 ind = 0
+ideal = set()
 
 
 def load_image(name, path='', colorkey=None):
@@ -33,13 +25,54 @@ def draw_image(name, X, Y, path="", colorkey=None):
     sprite.rect.y = Y
     all_sprites.draw(screen)
 
-BUTTONS = {"0": load_image("1.png"),
-           "1": load_image("2.png"),
-           "2": load_image("3.png"),
-           "3": load_image("4.png"),
-           "4": load_image("5.png"),
-           "5": load_image("6.png"),
-           "6": load_image("7.png")}
+
+CHARACTERS = ['алкаголик', 'жадина', 'злобный', 'раздрожительный', 'высокаомерный', 'лицимер', 'эгоистичен',
+              'жесток', "ленивый", 'жизнерадостный', 'реалист', 'ЗОЖник', 'щедрый', 'добрый', 'спокойный', 'скромный',
+              'прямолинейный', 'заботливый', 'добрый',
+              "активный"]
+
+BUTTONS_PASSIVE = {"0": load_image("alco.png", "/buttons"),
+                   "1": load_image("jadina.png", "/buttons"),
+                   "2": load_image("angry.png", "/buttons"),
+                   "3": load_image("hfzdroj.png", "/buttons"),
+                   "4": load_image("vsokmer.png", "/buttons"),
+                   "5": load_image("licemer.png", "/buttons"),
+                   "6": load_image("egoist.png", "/buttons"),
+                   "7": load_image("jestok.png", "/buttons"),
+                   "8": load_image("layzy.png", "/buttons"),
+                   "9": load_image("jiznerad.png", "/buttons"),
+                   "10": load_image("real.png", "/buttons"),
+                   "11": load_image("zoj.png", "/buttons"),
+                   "12": load_image("sedry.png", "/buttons"),
+                   "13": load_image("dobry.png", "/buttons"),
+                   "14": load_image("spokoiny.png", "/buttons"),
+                   "15": load_image("skromn.png", "/buttons"),
+                   "16": load_image("pryamolin.png", "/buttons"),
+                   "17": load_image("zabot.png", "/buttons"),
+                   "18": load_image("dobry.png", "/buttons"),
+                   "19": load_image("active.png", "/buttons")}
+
+BUTTONS_ACTIVE = {"0": load_image("alco2.png", "/buttons"),
+                  "1": load_image("jadina2.png", "/buttons"),
+                  "2": load_image("angry2.png", "/buttons"),
+                  "3": load_image("hfzdroj2.png", "/buttons"),
+                  "4": load_image("vsokmer2.png", "/buttons"),
+                  "5": load_image("licemer2.png", "/buttons"),
+                  "6": load_image("egoist2.png", "/buttons"),
+                  "7": load_image("jestok2.png", "/buttons"),
+                  "8": load_image("layzy2.png", "/buttons"),
+                  "9": load_image("jiznerad2.png", "/buttons"),
+                  "10": load_image("real2.png", "/buttons"),
+                  "11": load_image("zoj2.png", "/buttons"),
+                  "12": load_image("sedry2.png", "/buttons"),
+                  "13": load_image("dobry2.png", "/buttons"),
+                  "14": load_image("spokoiny2.png", "/buttons"),
+                  "15": load_image("skromn2.png", "/buttons"),
+                  "16": load_image("pryamolin2.png", "/buttons"),
+                  "17": load_image("zabot2.png", "/buttons"),
+                  "18": load_image("dobry2.png", "/buttons"),
+                  "19": load_image("active2.png", "/buttons")}
+
 
 class Cursor(pygame.sprite.Sprite):
     def __init__(self, image=None):
@@ -163,38 +196,50 @@ button_group = pygame.sprite.Group()
 
 cursor_image = load_image('cursor.png')
 
-"""new_game_b = Button(70, 65, 600, 150, "new game.png", "new game2.png", "new game2.png", quit)
-continue_b = Button(70, 265, 600, 150, "continue.png", "continue2.png", "continue2.png", quit)
-options_b = Button(70, 465, 600, 150, "options.png", "options2.png", "options2.png", quit)"""
+ideal1 = Button(70, 65, 400, 100, BUTTONS_PASSIVE[str(ind)], BUTTONS_ACTIVE[str(ind)], BUTTONS_ACTIVE[str(ind)],
+                lambda x=CHARACTERS[ind]: ideal.add(x))
+ideal2 = Button(70, 215, 400, 100, BUTTONS_PASSIVE[str(ind + 1)], BUTTONS_ACTIVE[str(ind + 1)],
+                BUTTONS_ACTIVE[str(ind + 1)], lambda x=CHARACTERS[ind + 1]: ideal.add(x))
+ideal3 = Button(70, 365, 400, 100, BUTTONS_PASSIVE[str(ind + 2)], BUTTONS_ACTIVE[str(ind + 2)],
+                BUTTONS_ACTIVE[str(ind + 2)], lambda x=CHARACTERS[ind + 2]: ideal.add(x))
+ideal4 = Button(70, 515, 400, 100, BUTTONS_PASSIVE[str(ind + 3)], BUTTONS_ACTIVE[str(ind + 3)],
+                BUTTONS_ACTIVE[str(ind + 3)], lambda x=CHARACTERS[ind + 3]: ideal.add(x))
+ideal5 = Button(70, 665, 400, 100, BUTTONS_PASSIVE[str(ind + 4)], BUTTONS_ACTIVE[str(ind + 4)],
+                BUTTONS_ACTIVE[str(ind + 4)], lambda x=CHARACTERS[ind + 4]: ideal.add(x))
 
-new_game_b = Button(70, 65, 600, 150, BUTTONS[str(ind)], BUTTONS[str(ind)], BUTTONS[str(ind)], quit)
-continue_b = Button(70, 265, 600, 150, BUTTONS[str(ind + 1)], BUTTONS[str(ind + 1)], BUTTONS[str(ind + 1)], quit)
-options_b = Button(70, 465, 600, 150, BUTTONS[str(ind + 2)], BUTTONS[str(ind + 2)], BUTTONS[str(ind + 2)], quit)
 
+class Scroll1:
+    def __init__(self, x1, y1, x2, y2):
+        global ind
+        global ideal1, ideal2, ideal3, ideal4, ideal5
+        mouse = pygame.mouse.get_pos()
+        if x1 < mouse[0] < x2 and y1 < mouse[1] < y2:
+            if event.button == 4:
+                ind -= 1
+                if ind < 0:
+                    ind = 0
+            elif event.button == 5:
+                ind += 1
+                if ind > len(CHARACTERS) - 5:
+                    ind = len(CHARACTERS) - 5
 
-def scroll():
-    global ind
-    global new_game_b
-    global continue_b
-    global options_b
+            ideal1.kill()
+            ideal2.kill()
+            ideal3.kill()
+            ideal4.kill()
+            ideal5.kill()
 
-    mouse = pygame.mouse.get_pos()
-    if 70 < mouse[0] < 670 and 65 < mouse[1] < 615:
-        if event.button == 4:
-            ind -= 1
-            if ind < 0:
-                ind = 0
-        elif event.button == 5:
-            ind += 1
-            if ind > len(BUTTONS) - 3:
-                ind = len(BUTTONS) - 3
-
-        del new_game_b, continue_b, options_b
-
-        new_game_b = Button(70, 65, 600, 150, BUTTONS[str(ind)], BUTTONS[str(ind)], BUTTONS[str(ind)], quit)
-        continue_b = Button(70, 265, 600, 150, BUTTONS[str(ind + 1)], BUTTONS[str(ind + 1)], BUTTONS[str(ind + 1)],quit)
-        options_b = Button(70, 465, 600, 150, BUTTONS[str(ind + 2)], BUTTONS[str(ind + 2)], BUTTONS[str(ind + 2)], quit)
-
+            ideal1 = Button(x1, y1, 400, 100, BUTTONS_PASSIVE[str(ind)], BUTTONS_ACTIVE[str(ind)],
+                            BUTTONS_ACTIVE[str(ind)],
+                            lambda x=CHARACTERS[ind]: ideal.add(x))
+            ideal2 = Button(70, y1 + 150, 400, 100, BUTTONS_PASSIVE[str(ind + 1)], BUTTONS_ACTIVE[str(ind + 1)],
+                            BUTTONS_ACTIVE[str(ind + 1)], lambda x=CHARACTERS[ind + 1]: ideal.add(x))
+            ideal3 = Button(70, y1 + 300, 400, 100, BUTTONS_PASSIVE[str(ind + 2)], BUTTONS_ACTIVE[str(ind + 2)],
+                            BUTTONS_ACTIVE[str(ind + 2)], lambda x=CHARACTERS[ind + 2]: ideal.add(x))
+            ideal4 = Button(70, y1 + 450, 400, 100, BUTTONS_PASSIVE[str(ind + 3)], BUTTONS_ACTIVE[str(ind + 3)],
+                            BUTTONS_ACTIVE[str(ind + 3)], lambda x=CHARACTERS[ind + 3]: ideal.add(x))
+            ideal5 = Button(70, y1 + 600, 400, 100, BUTTONS_PASSIVE[str(ind + 4)], BUTTONS_ACTIVE[str(ind + 4)],
+                            BUTTONS_ACTIVE[str(ind + 4)], lambda x=CHARACTERS[ind + 4]: ideal.add(x))
 
 
 cursor = Cursor()
@@ -207,10 +252,12 @@ pygame.mouse.set_visible(False)
 while running:
     for event in pygame.event.get():
         if event.type == pygame.MOUSEBUTTONDOWN:
-            scroll()
+            Scroll1(1, 1, 1, 1)
         button_group.update(event)
     screen.fill(pygame.Color("#DF1479"))
     all_sprites.draw(screen)
     all_sprites.update()
     clock.tick(FPS)
     pygame.display.flip()
+    print(ideal)
+

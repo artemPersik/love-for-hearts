@@ -12,15 +12,28 @@ def load_image(name, path='', colorkey=None):
     return image
 
 
-def draw_image(name, X, Y, path="", colorkey=None):
+def draw_image(name, X, Y, colorkey=None):
     all_sprites = pygame.sprite.Group()
     sprite = pygame.sprite.Sprite()
-    sprite.image = load_image(name, path, colorkey)
+    sprite.image = name
     sprite.rect = sprite.image.get_rect()
     all_sprites.add(sprite)
     sprite.rect.x = X
     sprite.rect.y = Y
     all_sprites.draw(screen)
+
+
+IMAGES = {"new_game": load_image("new game.png", "/buttons"),
+          "new_game2": load_image("new game2.png", "/buttons"),
+          "continue": load_image("continue.png", "/buttons"),
+          "continue2": load_image("continue2.png", "/buttons"),
+          "options": load_image("options.png", "/buttons"),
+          "options2": load_image("options2.png", "/buttons"),
+          "authors": load_image("authors.png", "/buttons"),
+          "authors2": load_image("authors2.png", "/buttons"),
+          "quit": load_image("quit.png", "/buttons"),
+          "quit2": load_image("quit2.png", "/buttons"),
+          "para": load_image("para2.png")}
 
 
 class Cursor(pygame.sprite.Sprite):
@@ -38,9 +51,9 @@ class Button(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, width, height, pass_image, direct_image, clicked_image, func):
         super().__init__(button_group, all_sprites)
 
-        self.pass_image = pygame.transform.scale(load_image(pass_image), (width, height))
-        self.direct_image = pygame.transform.scale(load_image(direct_image), (width, height))
-        self.clicked_image = pygame.transform.scale(load_image(clicked_image), (width, height))
+        self.pass_image = pygame.transform.scale(pass_image, (width, height))
+        self.direct_image = pygame.transform.scale(direct_image, (width, height))
+        self.clicked_image = pygame.transform.scale(clicked_image, (width, height))
         self.image = self.pass_image
         self.rect = self.image.get_rect().move(pos_x, pos_y)
         self.mask = pygame.mask.from_surface(self.image)
@@ -144,11 +157,11 @@ button_group = pygame.sprite.Group()
 cursor_image = load_image('cursor.png')
 para = load_image("para2.png")
 
-new_game_b = Button(70, 65, 600, 150, "new game.png", "new game2.png", "new game2.png", quit)
-continue_b = Button(70, 265, 600, 150, "continue.png", "continue2.png", "continue2.png", quit)
-options_b = Button(70, 465, 600, 150, "options.png", "options2.png", "options2.png", quit)
-authors_b = Button(70, 665, 600, 150, "authors.png", "authors2.png", "authors2.png", quit)
-quit_b = Button(70, 865, 600, 150, "quit.png", "quit2.png", "quit2.png", quit)
+new_game_b = Button(70, 65, 600, 150, IMAGES["new_game"], IMAGES["new_game2"], IMAGES["new_game2"], quit)
+continue_b = Button(70, 265, 600, 150, IMAGES["continue"], IMAGES["continue2"], IMAGES["continue2"], quit)
+options_b = Button(70, 465, 600, 150, IMAGES["options"], IMAGES["options2"], IMAGES["options2"], quit)
+authors_b = Button(70, 665, 600, 150, IMAGES["authors"], IMAGES["authors2"], IMAGES["authors2"], quit)
+quit_b = Button(70, 865, 600, 150, IMAGES["quit"], IMAGES["quit2"], IMAGES["quit2"], quit)
 heart = AnimatedSprite(load_image("heart.png"), 6, 2, 1100, 53)
 
 cursor = Cursor()
@@ -164,7 +177,7 @@ while running:
             running = False
         button_group.update(event)
     screen.fill(pygame.Color("#DF1479"))
-    draw_image("para2.png", 900, 53)
+    draw_image(IMAGES["para"], 900, 53)
     all_sprites.draw(screen)
     all_sprites.update()
     clock.tick(FPS)
