@@ -11,6 +11,24 @@ def save_game_progress(player, man):
     man.save_progress()
 
 
+def get_volume_from_save():
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_settings'
+    return config.getfloat(section, 'volume')
+
+
+def save_settings(**settings):
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_settings'
+    for setting, value in settings.items():
+        config.set(section, setting, str(value))
+
+    with open('save.ini', 'w', encoding='utf8') as configfile:
+        config.write(configfile)
+
+
 def terminate():
     pygame.quit()
     sys.exit()
@@ -24,14 +42,14 @@ def restart_game():
             'compatibility_value', 'character_value', 'body', 'face', 'hair', 'pants']
 
     for key in keys:
-        config.set(section, key, 'None')
+        config.set(section, key, 'null')
 
     section = 'section_player'
     keys = ['gender', 'gender_partner', 'age', 'characters', 'characters_partner', 'happiness_value',
             'wealth_value', 'compatibility_value', 'character_value']
 
     for key in keys:
-        config.set(section, key, 'None')
+        config.set(section, key, 'null')
 
     with open('save.ini', 'w', encoding='utf8') as configfile:
         config.write(configfile)
@@ -47,7 +65,7 @@ def load_image(name, path='', colorkey=None):
 
 
 def load_clothes(name):
-    fullname = os.path.join(f'data\\lists_clothes', name)
+    fullname = os.path.join(f'data/lists_clothes', name)
     if not os.path.isfile(fullname):
         print(f"Файл с одеждой '{fullname}' не найден")
         sys.exit()
@@ -61,8 +79,8 @@ def main_game():
     player = Player()
     man = Man(Body(), Face(), Pants(), Hair(), player)
 
-    Button(611, 950, 300, 75, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', man.reject_man)
-    Button(1023, 950, 300, 75, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', man.accept_man)
+    Button(611, 950, 300, 75, IMAGES['reject1'], IMAGES['reject2'], IMAGES['reject2'], man.reject_man)
+    Button(1023, 950, 300, 75, IMAGES['accept1'], IMAGES['accept2'], IMAGES['accept2'], man.accept_man)
 
     while True:
         for event in pygame.event.get():
@@ -79,6 +97,7 @@ def main_game():
                 restart_game()
 
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                save_game_progress(player, man)
                 all_sprites.empty()
                 button_group.empty()
                 man_group.empty()
@@ -96,9 +115,11 @@ def main_game():
 
 
 def pause_menu():
-    continue_button = Button(660, 100, 600, 150, 'continue.png', 'continue2.png', 'continue2.png', None)
-    restart_button = Button(660, 300, 600, 150, 'menu_button1.png', 'menu_button2.png', 'menu_button2.png', None)
-    quit_button = Button(660, 500, 600, 150, 'quit.png', 'quit2.png', 'quit2.png', terminate)
+    continue_btn = Button(660, 100, 600, 150, IMAGES['continue1'], IMAGES['continue2'], IMAGES['continue2'], None)
+    restart_btn = Button(660, 300, 600, 150, IMAGES['restart1'], IMAGES['restart2'], IMAGES['restart2'], None)
+    quit_btn = Button(660, 700, 600, 150, IMAGES['quit1'], IMAGES['quit2'], IMAGES['quit2'], terminate)
+    volume_slider = VolumeSlider((660, 500), IMAGES['line_slider'], (600, 100), (600, 150),
+                                 Slider(IMAGES['slider']), get_volume_from_save())
 
     while True:
         for event in pygame.event.get():
@@ -108,17 +129,20 @@ def pause_menu():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_q:
                 terminate()
 
-            if continue_button.is_mouse_button_up(event):
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE or continue_btn.is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
+                save_settings(volume=volume_slider.get_volume())
                 return
 
-            if restart_button.is_mouse_button_up(event):
+            if restart_btn.is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
+                save_settings(volume=volume_slider.get_volume())
                 restart_game()
                 return
             button_group.update(event)
+            volume_slider.update(event)
 
         screen.fill('#DF1479')
         all_sprites.draw(screen)
@@ -130,7 +154,7 @@ def pause_menu():
 class Cursor(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = cursor_image
+        self.image = CURSOR_IMAGE
         self.rect = self.image.get_rect()
 
     def update(self):
@@ -145,7 +169,9 @@ class AllSprites(pygame.sprite.Group):
     def draw(self, surface):
         sprites = self.sprites()
         surface_blit = surface.blit
-        for spr in sorted(sprites, key=lambda x: isinstance(x, Cursor)):
+        sprites.sort(key=lambda x: isinstance(x, Slider))
+        sprites.sort(key=lambda x: isinstance(x, Cursor))
+        for spr in sprites:
             self.spritedict[spr] = surface_blit(spr.image, spr.rect)
         self.lostsprites = []
 
@@ -154,9 +180,9 @@ class Button(pygame.sprite.Sprite):
     def __init__(self, pos_x, pos_y, width, height, pass_image, direct_image, clicked_image, func):
         super().__init__(button_group, all_sprites)
 
-        self.pass_image = pygame.transform.scale(load_image(pass_image), (width, height))
-        self.direct_image = pygame.transform.scale(load_image(direct_image), (width, height))
-        self.clicked_image = pygame.transform.scale(load_image(clicked_image), (width, height))
+        self.pass_image = pygame.transform.scale(pass_image, (width, height))
+        self.direct_image = pygame.transform.scale(direct_image, (width, height))
+        self.clicked_image = pygame.transform.scale(clicked_image, (width, height))
         self.image = self.pass_image
         self.rect = self.image.get_rect().move(pos_x, pos_y)
         self.mask = pygame.mask.from_surface(self.image)
@@ -204,13 +230,13 @@ class Button(pygame.sprite.Sprite):
         return self.func
 
     def set_pass_image(self, image):
-        self.pass_image = load_image(image)
+        self.pass_image = image
 
     def set_direct_image(self, image):
-        self.direct_image = load_image(image)
+        self.direct_image = image
 
     def set_clicked_image(self, image):
-        self.clicked_image = load_image(image)
+        self.clicked_image = image
 
     def set_pos(self, pox_x, pos_y):
         self.pos = (pox_x, pos_y)
@@ -226,6 +252,58 @@ class Button(pygame.sprite.Sprite):
 
     def set_func(self, func):
         self.func = func
+
+
+class Slider(pygame.sprite.Sprite):
+    def __init__(self, image, size=None):
+        super().__init__(all_sprites)
+        if size is not None:
+            image = pygame.transform.scale(image, size)
+        self.image = image
+        self.rect = self.image.get_rect()
+
+    def move_to(self, pos_x, pos_y):
+        self.rect.x, self.rect.y = pos_x, pos_y
+
+
+class VolumeSlider(pygame.sprite.Sprite):
+    def __init__(self, pos, line_image, line_size, size, slider, volume):
+        super().__init__(all_sprites)
+        self.image = pygame.transform.scale(line_image, line_size)
+        self.rect = self.image.get_rect().move(pos[0], pos[1] + (size[1] - line_size[1]) // 2)
+        self.volume_slider = pygame.Rect(*pos, *size)
+        self.slider, self.volume, self.flag = slider, volume, False
+        self.slider.rect.x, self.slider.rect.y = size[0] * volume + pos[0] - slider.rect.width // 2, pos[1]
+
+        self.pos_x, self.pos_y = pos
+        self.width, self.height = size
+        self.slider_width, self.slider_height = self.rect.size
+
+    def fix_slider_coord(self):
+        if self.slider.rect.x < self.rect.x - self.slider.rect.width // 2:
+            self.slider.rect.x = self.rect.x - self.slider.rect.width // 2
+        elif self.slider.rect.x > self.rect.x + self.rect.width - self.slider.rect.width // 2:
+            self.slider.rect.x = self.rect.x + self.rect.width - self.slider.rect.width // 2
+
+    def update(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and self.volume_slider.collidepoint(event.pos):
+            self.slider.rect.x = event.pos[0]
+            self.flag = True
+
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            self.flag = False
+
+        if event.type == pygame.MOUSEMOTION and self.flag:
+            self.slider.rect.x += event.rel[0]
+            self.fix_slider_coord()
+
+        if event.type == pygame.MOUSEWHEEL:
+            self.slider.rect.x += event.y * self.slider.rect.width // 20
+            self.fix_slider_coord()
+        self.volume = round((self.slider.rect.x - self.rect.x + self.slider.rect.width // 2) / self.rect.width, 2)
+
+    def get_volume(self):
+        return self.volume
 
 
 class Hair(pygame.sprite.Sprite):
@@ -339,12 +417,12 @@ class Man:
 
     def render_specifications(self, screen):
         text = [f'{item[0]}: {item[1]}' for item in self.specifications.items()]
-        font = pygame.font.Font(None, 70)
+        font = FONTS['Pacifico-Regular-60']
         text_coord = 10
         for line in text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
-            text_coord += 100
+            text_coord += 30
             intro_rect.top = text_coord
             intro_rect.x = 1258
             text_coord += intro_rect.height
@@ -355,7 +433,7 @@ class Man:
         line = ''
 
         for i, word in enumerate(self.description.split()):
-            if len(line) + len(word) <= 40:
+            if len(line) + len(word) <= 37:
                 line += f' {word}'
             else:
                 text.append(line[1:])
@@ -364,12 +442,12 @@ class Man:
             if i == len(self.description.split()) - 1:
                 text.append(line[1:])
 
-        font = pygame.font.Font(None, 35)
-        text_coord = 650
+        font = FONTS['Pacifico-Regular-30']
+        text_coord = 600
         for line in text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
-            text_coord += 30
+            text_coord += 1
             intro_rect.top = text_coord
             intro_rect.x = 1350
             text_coord += intro_rect.height
@@ -474,7 +552,7 @@ class Man:
             happiness = 10
         return happiness
 
-    def save_progress(self, is_restart=False):
+    def save_progress(self):
         config = ConfigParser()
         config.read('save.ini', encoding='utf8')
         section = 'section_man'
@@ -488,71 +566,69 @@ class Man:
                   ('hair', ' '.join(dict(HAIRS)[self.hair.image])), ('pants', ' '.join(dict(PANTS)[self.pants.image]))]
 
         for value1, value2 in values:
-            if is_restart:
-                value2 = 'None'
             config.set(section, value1, value2)
 
         with open('save.ini', 'w', encoding='utf8') as configfile:
             config.write(configfile)
 
     def set_body(self, body):
-        if body != 'None':
+        if body != 'null':
             path, name = body.split()
             self.body.image = dict(item[::-1] for item in BODIES)[path, name]
 
     def set_face(self, face):
-        if face != 'None':
+        if face != 'null':
             path, name = face.split()
             self.face.image = dict(item[::-1] for item in FACES)[path, name]
 
     def set_hair(self, hair):
-        if hair != 'None':
+        if hair != 'null':
             path, name = hair.split()
             self.hair.image = dict(item[::-1] for item in HAIRS)[path, name]
 
     def set_pants(self, pants):
-        if pants != 'None':
+        if pants != 'null':
             path, name = pants.split()
             self.pants.image = dict(item[::-1] for item in PANTS)[path, name]
 
     def set_gender(self, gender):
-        if gender != 'None':
+        if gender != 'null':
             self.gender = gender
 
     def set_age(self, age):
-        if age != 'None':
+        if age != 'null':
             self.age = int(age)
 
     def set_name(self, name):
-        if name != 'None':
+        if name != 'null':
             self.name = name
 
     def set_job(self, job):
-        if job != 'None':
+        if job != 'null':
             self.job = job
 
     def set_characters(self, characters):
-        if characters != 'None':
+        if characters != 'null':
             self.characters = characters.split()
 
     def set_property(self, pproperty):
-        if pproperty != 'None':
+        if pproperty != 'null':
             self.property = pproperty
 
     def set_happiness_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.happines = value
 
     def set_wealth_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.wealth = value
 
     def set_compatibility_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.compatibility = value
 
     def set_character_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.character = value
 
 
@@ -572,18 +648,18 @@ class Player:
 
     def render(self, screen):
         text = [f'{item[0]}: {item[1]}' for item in self.specifications.items()]
-        font = pygame.font.Font(None, 70)
+        font = FONTS['Pacifico-Regular-60']
         text_coord = 10
         for line in text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
-            text_coord += 100
+            text_coord += 30
             intro_rect.top = text_coord
             intro_rect.x = 70
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
 
-    def save_progress(self, is_restart=False):
+    def save_progress(self):
         config = ConfigParser()
         config.read('save.ini', encoding='utf8')
         section = 'section_player'
@@ -595,8 +671,6 @@ class Player:
                   ('character_value', str(self.specifications['Характер']))]
 
         for value1, value2 in values:
-            if is_restart:
-                value2 = 'None'
             config.set(section, value1, value2)
 
         with open('save.ini', 'w', encoding='utf8') as configfile:
@@ -613,55 +687,55 @@ class Player:
             getattr(self, f'set_{key}')(config.get(section, key))
 
     def set_gender(self, gender):
-        if gender != 'None':
+        if gender != 'null':
             self.gender = gender
         else:
             self.gender = 'W'
 
     def set_age(self, age):
-        if age != 'None':
+        if age != 'null':
             self.age = int(age)
         else:
             self.age = 20
 
     def set_gender_partner(self, gender):
-        if gender != 'None':
+        if gender != 'null':
             self.gender_partner = gender
         else:
             self.gender_partner = 'M'
 
     def set_characters(self, characters):
-        if characters != 'None':
+        if characters != 'null':
             self.characters = characters.split()
         else:
             self.characters = ['ЗОЖник', 'щедрый', 'добрый']
 
     def set_characters_partner(self, characters):
-        if characters != 'None':
+        if characters != 'null':
             self.characters_partner = characters.split()
         else:
             self.characters_partner = ['ЗОЖник', 'щедрый', 'добрый']
 
     def set_happiness_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.specifications['Счастье'] = int(value)
         else:
             self.specifications['Счастье'] = 5
 
     def set_wealth_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.specifications['Достаток'] = int(value)
         else:
             self.specifications['Достаток'] = 5
 
     def set_compatibility_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.specifications['Совместимость'] = int(value)
         else:
             self.specifications['Совместимость'] = 5
 
     def set_character_value(self, value):
-        if value != 'None':
+        if value != 'null':
             self.specifications['Характер'] = int(value)
         else:
             self.specifications['Характер'] = 5
@@ -674,30 +748,36 @@ all_sprites = AllSprites()
 man_group = pygame.sprite.Group()
 button_group = pygame.sprite.Group()
 
+IMAGES = {'continue1': load_image('continue1.png'), 'continue2': load_image('continue2.png'),
+          'slider': load_image('slider.png'), 'line_slider': load_image('line_slider.png'),
+          'restart1': load_image('restart1.png'), 'restart2': load_image('restart2.png'),
+          'accept1': load_image('accept1.png'), 'accept2': load_image('accept2.png'),
+          'reject1': load_image('reject1.png'), 'reject2': load_image('reject2.png'),
+          'quit1': load_image('quit1.png'), 'quit2': load_image('quit2.png')}
+FONTS = {'Pacifico-Regular-60': pygame.font.Font('data/fonts/Pacifico-Regular.ttf', 60),
+         'Pacifico-Regular-30': pygame.font.Font('data/fonts/Pacifico-Regular.ttf', 30)}
+
 FACES = list(map(lambda x: (load_image(x[1], x[0]), x), load_clothes('faces.txt')))
 HAIRS = list(map(lambda x: (load_image(x[1], x[0]), x), load_clothes('hairs.txt')))
 BODIES = list(map(lambda x: (load_image(x[1], x[0]), x), load_clothes('T-shirts.txt')))
 PANTS = list(map(lambda x: (load_image(x[1], x[0]), x), load_clothes('pants.txt')))
-cursor_image = load_image('cursor.png')
-empty_image = load_image('empty.png')
+CURSOR_IMAGE = load_image('cursor.png')
 
-NAMES = ["Иван", "Артём", "Влад", "Женя", "Никита", "Виталик", "Петя", "Жора", "Гена", "Роберт", "Тимур", "Саша",
-         "Миша", "Лёша", "Алан", "Вова", "Богдан", "Армэн",
-         "Карэн", "Альберт", "Дима", "Лев", "Стас", "Самуэль", "Джон", "Павел", "Сава", "Стёпа", "Рэн", "Рустам",
-         "Олег", "Ян", "Иосиф", "Денис", "Слава", "Артур", "Рик"]
+NAMES = ['Иван', 'Артём', 'Влад', 'Женя', 'Никита', 'Виталик', 'Петя', 'Жора', 'Гена', 'Роберт', 'Тимур', 'Саша',
+         'Миша', 'Лёша', 'Алан', 'Вова', 'Богдан', 'Армэн', 'Олег', 'Ян', 'Иосиф', 'Денис', 'Слава', 'Артур', 'Рик',
+         'Карэн', 'Альберт', 'Дима', 'Лев', 'Стас', 'Самуэль', 'Джон', 'Павел', 'Сава', 'Стёпа', 'Рэн', 'Рустам']
 CHARACTERS = {
-    "negative": ['алкаголик', 'жадина', 'злобный', 'раздрожительный', 'высокаомерный', 'лицимер', 'эгоистичен',
-                 'жесток', "ленивый"],
-    "passive": ['жизнерадостный', 'реалист'],
-    "positive": ['ЗОЖник', 'щедрый', 'добрый', 'спокойный', 'скромный', 'прямолинейный', 'заботливый', 'добрый',
-                 "активный"]}
-JOBS = {"beggar": ['никем', 'дворником', 'в макдональдсе', 'уборщиком', 'грузсчиком'],
-        "medium": ['строителем', 'врачом', 'мелкийм предпинемателем', 'инженером', 'сантехником', 'эллектриком',
+    'negative': ['алкаголик', 'жадиный', 'злобный', 'раздрожительный', 'высокомерный', 'лицимер', 'эгоистиченый',
+                 'жестокий', "ленивый"],
+    'passive': ['жизнерадостный', 'реалист'],
+    'positive': ['ЗОЖник', 'щедрый', 'добрый', 'спокойный', 'скромный', 'прямолинейный', 'заботливый', 'активный', 'добрый']}
+JOBS = {'beggar': ['никем', 'дворником', 'в макдональдсе', 'уборщиком', 'грузчиком'],
+        'medium': ['строителем', 'врачом', 'мелким предпринимателем', 'инженером', 'сантехником', 'электриком',
                    'пилотом'],
-        "high": ['бизнессмеом', 'нефтяником', 'банкиром', 'айтишником']}
-PROPERTIES = {"low": ['ночего'],
-              "medium": ['квартиру', 'машину'],
-              "high": ["квартиру и машину"]}
+        'high': ['бизнессмеом', 'нефтяником', 'банкиром', 'айтишником']}
+PROPERTIES = {'low': ['ничего'],
+              'medium': ['квартиру', 'машину'],
+              'high': ["квартиру и машину"]}
 
 cursor = Cursor()
 clock = pygame.time.Clock()
