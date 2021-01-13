@@ -2,9 +2,25 @@ from configparser import ConfigParser
 
 
 # Сохранение игрового процесса
-def save_game_progress(player, man):
-    player.save_progress()
-    man.save_progress()
+def save_game_progress(player=None, man=None):
+    if player is not None:
+        player.save_progress()
+    if man is not None:
+        man.save_progress()
+
+
+def save_new_player(player):
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_player'
+    keys = ['gender', 'gender_partner', 'age', 'characters', 'characters_partner', 'happiness_value',
+            'wealth_value', 'compatibility_value', 'character_value']
+    for key in keys:
+        player.setdefault(key, 'null')
+        config.set(section, key, player[key])
+
+    with open('save.ini', 'w', encoding='utf8') as configfile:
+        config.write(configfile)
 
 
 # Получение громкости из сохранения

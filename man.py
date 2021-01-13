@@ -113,7 +113,7 @@ class Man:
         section = 'section_man'
         keys = ['gender', 'age', 'name', 'characters', 'job', 'property', 'happiness_value', 'wealth_value',
                 'compatibility_value', 'character_value', 'body', 'face', 'hair', 'pants']
-        for key in keys:  # хайповоя замена страх значений
+        for key in keys:  # хайповоя замена старых значений
             getattr(self, f'set_{key}')(config.get(section, key))
 
         # Обновление характеристик и описания

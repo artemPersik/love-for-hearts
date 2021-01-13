@@ -1,9 +1,7 @@
 from GUI import Button, Cursor, Slider, VolumeSlider, AllSprites
-from save import save_game_progress, restart_game
-from constants import IMAGES, CURSOR_IMAGE, FONTS
-from man import Man, Body, Face, Pants, Hair
-from system import terminate
+from information_input import information_input
 from pause import pause_menu
+from constants import IMAGES
 from game import main_game
 import pygame
 
@@ -18,15 +16,20 @@ def main():
     man_group = pygame.sprite.Group()
     button_group = pygame.sprite.Group()
 
-    cursor = Cursor([all_sprites], CURSOR_IMAGE)
+    cursor = Cursor(screen, IMAGES['cursor'])
     pygame.mouse.set_visible(False)
+    result = 'continue'
     clock = pygame.time.Clock()
     FPS = 50
 
     # Игровой цикл
     while True:
-        main_game(all_sprites, button_group, man_group, screen, cursor)
-        pause_menu(all_sprites, button_group, screen, cursor)
+        if result == 'continue':
+            result = main_game(all_sprites, button_group, man_group, screen, cursor)
+        if result == 'new game':
+            result = information_input(all_sprites, button_group, screen, cursor)
+        if result == 'menu':
+            result = pause_menu(all_sprites, button_group, screen, cursor)
 
 
 if __name__ == '__main__':
