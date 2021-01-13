@@ -3,7 +3,7 @@ from pygame import KEYDOWN, K_ESCAPE
 from save import save_game_progress
 from pygame.display import flip
 from pygame.event import get
-from constants import IMAGES
+from constants import BUTTONS
 from player import Player
 from GUI import Button
 
@@ -14,9 +14,9 @@ def main_game(all_sprites, button_group, man_group, screen, cursor):
     man = Man(Body([man_group, all_sprites]), Face([man_group, all_sprites]),
               Pants([man_group, all_sprites]), Hair([man_group, all_sprites]), player, man_group)
 
-    Button(611, 950, 300, 75, IMAGES['reject1'], IMAGES['reject2'], IMAGES['reject2'],
+    Button(611, 950, 300, 75, BUTTONS['reject1'], BUTTONS['reject2'], BUTTONS['reject2'],
            [button_group, all_sprites], cursor, man.reject_man)
-    Button(1023, 950, 300, 75, IMAGES['accept1'], IMAGES['accept2'], IMAGES['accept2'],
+    Button(1023, 950, 300, 75, BUTTONS['accept1'], BUTTONS['accept2'], BUTTONS['accept2'],
            [button_group, all_sprites], cursor, man.accept_man)
 
     while True:
@@ -27,7 +27,7 @@ def main_game(all_sprites, button_group, man_group, screen, cursor):
                 all_sprites.empty()
                 button_group.empty()
                 man_group.empty()
-                return
+                return 'menu'
             button_group.update(event)
 
         screen.fill('#DF1479')

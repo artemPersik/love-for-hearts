@@ -1,3 +1,4 @@
+from constants import CHARACTERS
 import pygame
 
 
@@ -15,19 +16,28 @@ class AllSprites(pygame.sprite.Group):
 
 # Клас курсора, ничего интересного)))
 class Cursor(pygame.sprite.Sprite):
-    def __init__(self, groups, image):
-        super().__init__(*groups)
+    def __init__(self, screen, image):
+        self.group = pygame.sprite.Group()
+        super().__init__(self.group)
         self.image = image
         self.rect = self.image.get_rect()
-        self.groups = groups
+        self.screen = screen
 
     def update(self):
         if pygame.mouse.get_focused():
             self.rect.x, self.rect.y = pygame.mouse.get_pos()
+            self.group.draw(self.screen)
 
-        for group in self.groups:
-            if self not in group:
-                group.add(self)
+
+class StaticImage(pygame.sprite.Sprite):
+    def __init__(self, groups, image, pos_x, pos_y):
+        super().__init__(*groups)
+        self.image = image
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+        self.groups = groups
+
+    def move_to(self, pos):
+        self.rect.x, self.rect.y = pos
 
 
 # Класс кнопки
@@ -187,4 +197,111 @@ class VolumeSlider(pygame.sprite.Sprite):
     # Метод для получения громкости
     def get_volume(self):
         return self.volume
+
+
+class ScrollBox:
+    def __init__(self, pos_x, pos_y, width, height, text_x, text_y, buttons, visible_count, indent):
+        self.pos_x, self.pos_y, self.width, self.height = pos_x, pos_y, width, height
+        self.text_x, self.text_y = text_x, text_y
+        self.rect = pygame.Rect(pos_x, pos_y, width, height)
+        self.buttons, self.indent = buttons, indent
+        self.visible_count, self.ind = visible_count, 0
+        self.visible_buttons = self.buttons[self.ind:self.ind + self.visible_count]
+        self.characters_values = [item for value in CHARACTERS.values() for item in value]
+        self.collection = []
+
+        self.update_buttons()
+
+    def update(self, *events):
+        if self.rect.collidepoint(pygame.mouse.get_pos()):
+            if events[0] and events[0].type == pygame.MOUSEWHEEL:
+                self.ind -= events[0].y
+                if self.ind < 0:
+                    self.ind = 0
+                if self.ind > len(self.characters_values) - self.visible_count:
+                    self.ind = len(self.characters_values) - self.visible_count
+            if events[0] and events[0].type == pygame.KEYUP and events[0].key == pygame.K_BACKSPACE:
+                if self.collection:
+                    del self.collection[-1]
+            self.update_buttons()
+
+    def update_buttons(self):
+        self.visible_buttons = self.buttons[self.ind:self.ind + self.visible_count]
+        for i, button in enumerate(self.buttons):
+            button.set_func(lambda x=self.characters_values[i]: self.collection.append(x)
+                if len(self.collection) < 5 and x not in self.collection else 0)
+            if button in self.visible_buttons:
+                button.set_visible(True)
+                button.set_pos(self.pos_x, self.pos_y + self.indent * (i - self.ind))
+            else:
+                button.set_visible(False)
+                button.set_pos(2000, 0)
+
+    def render(self, screen, color, font, symbols_on_line, indent):
+        text = ', '.join(self.collection).capitalize()
+        pos_x, pos_y = self.text_x, self.text_y
+        intro_text = []
+        line = ''
+
+        for i, word in enumerate(text.split()):
+            if len(line) + len(word) <= symbols_on_line:
+                line += f' {word}'
+            else:
+                intro_text.append(line[1:])
+                line = f' {word}'
+
+            if i == len(text.split()) - 1:
+                intro_text.append(line[1:])
+
+        for line in intro_text:
+            string_rendered = font.render(line, 1, color)
+            intro_rect = string_rendered.get_rect()
+            pos_y += indent
+            intro_rect.top = pos_y
+            intro_rect.x = pos_x
+            pos_y += intro_rect.height
+            screen.blit(string_rendered, intro_rect)
+
+    def get_collection(self):
+        return self.collection
+
+    def set_collection(self, collection):
+        self.collection = collection
+
+
+class SpinBox:
+    def __init__(self, pos_x, pos_y, width, height):
+        self.pos_x, self.pos_y, self.width, self.height = pos_x, pos_y, width, height
+        self.rect = pygame.rect.Rect(pos_x, pos_y, width, height)
+        self.flag = False
+        self.value = ''
+
+    def update(self, *events):
+        pos = pygame.mouse.get_pos()
+        click = pygame.mouse.get_pressed(3)
+        if self.rect.collidepoint(pos) and click[0]:
+            self.flag = True
+        elif not self.rect.collidepoint(pos) and click[0]:
+            self.flag = False
+
+        if self.flag:
+            if events[0].type == pygame.KEYDOWN:
+                if events[0].key == pygame.K_BACKSPACE:
+                    self.value = self.value[0:-1]
+                if len(self.value) < 2:
+                    if events[0].unicode in [str(i) for i in range(10)]:
+                        self.value += events[0].unicode
+
+    def render(self, screen, color, font):
+        string_rendered = font.render(self.value, 1, color)
+        intro_rect = string_rendered.get_rect()
+        intro_rect.top = self.pos_y
+        intro_rect.x = self.pos_x + self.width // 2 - intro_rect.width // 2
+        screen.blit(string_rendered, intro_rect)
+
+    def get_value(self):
+        return self.value
+
+    def set_value(self, value):
+        self.value = value
 
