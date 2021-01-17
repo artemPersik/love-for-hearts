@@ -1,4 +1,5 @@
 from constants import CHARACTERS
+from music import BTN_SOUND, set_volume_all_sounds
 import pygame
 
 
@@ -40,6 +41,29 @@ class StaticImage(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = pos
 
 
+class AnimatedSprite(pygame.sprite.Sprite):
+    def __init__(self, groups, sheet, columns, rows, x, y):
+        super().__init__(*groups)
+        self.frames = []
+        self.cut_sheet(sheet, columns, rows)
+        self.cur_frame = 0
+        self.image = self.frames[self.cur_frame]
+        self.rect = self.rect.move(x, y)
+
+    def cut_sheet(self, sheet, columns, rows):
+        self.rect = pygame.Rect(0, 0, sheet.get_width() // columns,
+                                sheet.get_height() // rows)
+        for j in range(rows):
+            for i in range(columns):
+                frame_location = (self.rect.w * i, self.rect.h * j)
+                self.frames.append(sheet.subsurface(pygame.Rect(
+                    frame_location, self.rect.size)))
+
+    def update(self):
+        self.cur_frame = (self.cur_frame + 1) % len(self.frames)
+        self.image = self.frames[self.cur_frame]
+
+
 # Класс кнопки
 class Button(pygame.sprite.Sprite):
     # Ну тут тупа генератор, по названию переменных всё очевидно)
@@ -59,6 +83,7 @@ class Button(pygame.sprite.Sprite):
         self.cursor = cursor
         self.func = func
         self.width, self.height = width, height
+        self.is_clicked = False
 
     # Ну типа проверка нажатий и наведений на кнопку
     def update(self, *events):
@@ -66,10 +91,12 @@ class Button(pygame.sprite.Sprite):
             return
 
         # проверка на на отпускае мыши
-        if events and self.is_mouse_button_up(events[0]):
+        if self.is_clicked and self.is_mouse_button_up(events[0]):
             self.image = self.clicked_image
+            BTN_SOUND.play()
             if self.func is not None:
                 self.func()
+            self.is_clicked = False
         # проверка на нажатие мыши
         elif self.is_mouse_button_down():
             self.image = self.clicked_image
@@ -78,6 +105,13 @@ class Button(pygame.sprite.Sprite):
             self.image = self.direct_image
         else:
             self.image = self.pass_image
+        self.update_is_clicked(events[0])
+
+    def update_is_clicked(self, event):
+        if event and event.type == pygame.MOUSEBUTTONUP:
+            self.is_clicked = False
+        elif event and event.type == pygame.MOUSEBUTTONDOWN and pygame.sprite.collide_mask(self, self.cursor):
+            self.is_clicked = True
 
     # Проверка на на отпускае мыши
     def is_direct(self):
@@ -85,11 +119,15 @@ class Button(pygame.sprite.Sprite):
 
     # Проверка на нажатие мыши
     def is_mouse_button_down(self):
-        return pygame.mouse.get_pressed(3)[0] and pygame.sprite.collide_mask(self, self.cursor)
+        if pygame.mouse.get_pressed(3)[0] and pygame.sprite.collide_mask(self, self.cursor):
+            return True
+        return False
 
     # Проверка на на отпускае мыши
     def is_mouse_button_up(self, event):
-        return event.type == pygame.MOUSEBUTTONUP and event.button == 1 and pygame.sprite.collide_mask(self, self.cursor)
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and pygame.sprite.collide_mask(self, self.cursor):
+            return True
+        return False
 
     # Куча методов для изменения и получения переменных экземпляра класса
     def get_pos(self):
@@ -145,13 +183,19 @@ class Button(pygame.sprite.Sprite):
 
 # Класс для ползунка у слайдера
 class Slider(pygame.sprite.Sprite):
-    def __init__(self, image, groups, size=None):
+    def __init__(self, image, groups, size=None, pos=None):
         super().__init__(*groups)
         if size is not None:
             image = pygame.transform.scale(image, size)
         self.image = image
         self.rect = self.image.get_rect()
         self.groups = groups
+        if pos is not None:
+            self.rect.x, self.rect.y = pos
+
+    def move(self, x, y):
+        self.rect.x += x
+        self.rect.y += y
 
 
 # Класс для слайдера громкостти
@@ -193,6 +237,7 @@ class VolumeSlider(pygame.sprite.Sprite):
             self.slider.rect.x += event.y * self.slider.rect.width // 20
             self.fix_slider_coord()
         self.volume = round((self.slider.rect.x - self.rect.x + self.slider.rect.width // 2) / self.rect.width, 2)
+        set_volume_all_sounds(self.volume)
 
     # Метод для получения громкости
     def get_volume(self):
@@ -200,7 +245,7 @@ class VolumeSlider(pygame.sprite.Sprite):
 
 
 class ScrollBox:
-    def __init__(self, pos_x, pos_y, width, height, text_x, text_y, buttons, visible_count, indent):
+    def __init__(self, pos_x, pos_y, width, height, text_x, text_y, buttons, visible_count, indent, slider=None):
         self.pos_x, self.pos_y, self.width, self.height = pos_x, pos_y, width, height
         self.text_x, self.text_y = text_x, text_y
         self.rect = pygame.Rect(pos_x, pos_y, width, height)
@@ -209,6 +254,7 @@ class ScrollBox:
         self.visible_buttons = self.buttons[self.ind:self.ind + self.visible_count]
         self.characters_values = [item for value in CHARACTERS.values() for item in value]
         self.collection = []
+        self.slider = slider
 
         self.update_buttons()
 
@@ -216,6 +262,14 @@ class ScrollBox:
         if self.rect.collidepoint(pygame.mouse.get_pos()):
             if events[0] and events[0].type == pygame.MOUSEWHEEL:
                 self.ind -= events[0].y
+                if self.slider is not None:
+                    rel_y = (self.height - self.slider.rect.height) * events[0].y / (len(self.buttons) - 1)
+                    self.slider.move(0, -rel_y)
+                    if self.slider.rect.y > self.pos_y - self.slider.rect.height * 1.25 + self.height:
+                        self.slider.rect.y = self.pos_y - self.slider.rect.height * 1.25 + self.height
+                    if self.slider.rect.y < self.pos_y + self.slider.rect.height * 0.25:
+                        self.slider.rect.y = self.pos_y + self.slider.rect.height * 0.25
+
                 if self.ind < 0:
                     self.ind = 0
                 if self.ind > len(self.characters_values) - self.visible_count:

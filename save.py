@@ -63,3 +63,10 @@ def restart_game():
 
     with open('save.ini', 'w', encoding='utf8') as configfile:
         config.write(configfile)
+
+
+def check_null_in_save():
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_man'
+    return config.get(section, 'gender') == 'null'

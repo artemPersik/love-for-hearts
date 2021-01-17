@@ -49,7 +49,10 @@ IMAGES = {'line_slider': load_image('line_slider.png'),
           'cursor': load_image('cursor.png'),
           'slider': load_image('slider.png'),
           'field': load_image('field.png'),
-          'woman': load_image('woman.png')}
+          'woman': load_image('woman.png'),
+          'scrollslider': load_image('scroll_slider.png'),
+          'heart': load_image('heart.png'),
+          'para': load_image('para2.png')}
 FONTS = {'Pacifico-Regular-60': Font('data/fonts/Pacifico-Regular.ttf', 60),
          'Pacifico-Regular-30': Font('data/fonts/Pacifico-Regular.ttf', 30),
          'RammettoOne-Regular-90': Font("data/fonts/RammettoOne-Regular.ttf", 90),

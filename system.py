@@ -36,3 +36,10 @@ def load_buttons_images():
     path = 'data/images/buttons'
     names = [(name[:-4], name) for name in listdir(path) if name[-3:] == 'png']
     return [(key, load_image(value, '/buttons')) for key, value in names]
+
+
+def print_text(screen, pos_x, pos_y, text, color, font):
+    string_rendered = font.render(text, 1, color)
+    intro_rect = string_rendered.get_rect()
+    intro_rect.top, intro_rect.x = pos_y, pos_x
+    screen.blit(string_rendered, intro_rect)

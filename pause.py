@@ -2,6 +2,7 @@ from save import save_settings, get_volume_from_save, restart_game
 from GUI import Button, Slider, VolumeSlider
 from constants import BUTTONS, IMAGES
 from system import terminate
+from music import BTN_SOUND
 from pygame import KEYDOWN, K_ESCAPE
 from pygame.display import flip
 from pygame.event import get
@@ -21,16 +22,18 @@ def pause_menu(all_sprites, button_group, screen, cursor):
     while True:
         for event in get():
 
-            if event.type == KEYDOWN and event.key == K_ESCAPE or continue_btn.is_mouse_button_up(event):
+            if event.type == KEYDOWN and event.key == K_ESCAPE or continue_btn.is_clicked:
                 all_sprites.empty()
                 button_group.empty()
                 save_settings(volume=volume_slider.get_volume())
+                BTN_SOUND.play()
                 return 'continue'
 
-            if restart_btn.is_mouse_button_up(event):
+            if restart_btn.is_clicked:
                 all_sprites.empty()
                 button_group.empty()
                 save_settings(volume=volume_slider.get_volume())
+                BTN_SOUND.play()
                 return 'new game'
             button_group.update(event)
             volume_slider.update(event)

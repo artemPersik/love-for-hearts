@@ -1,20 +1,24 @@
-from GUI import SpinBox, ScrollBox, Button, StaticImage
+from GUI import SpinBox, ScrollBox, Button, StaticImage, Slider
 from constants import BUTTONS_PASS, BUTTONS_ACTIVE, FONTS, IMAGES, BUTTONS
 from save import save_new_player, restart_game
+from music import BTN_SOUND
+from system import print_text
 import pygame
 
 
 def information_input(all_sprites, button_group, screen, cursor):
     spinbox = SpinBox(810, 700, 290, 150)
     buttons = [Button(0, 0, 400, 100, images[0], images[1], images[1], [all_sprites, button_group], cursor, None)
-               for i, images in enumerate(zip(BUTTONS_PASS, BUTTONS_ACTIVE))]
-    scroll1 = ScrollBox(70, 65, 400, 700, 70, 800, buttons, 5, 150)
+               for images in zip(BUTTONS_PASS, BUTTONS_ACTIVE)]
+    scroll1 = ScrollBox(120, 130, 400, 700, 70, 900, buttons, 5, 150,
+                        Slider(IMAGES['scrollslider'], [all_sprites], pos=(70, 180)))
     buttons = [Button(0, 0, 400, 100, images[0], images[1], images[1], [all_sprites, button_group], cursor, None)
-               for i, images in enumerate(zip(BUTTONS_PASS, BUTTONS_ACTIVE))]
+               for images in zip(BUTTONS_PASS, BUTTONS_ACTIVE)]
     continue_btn = Button(660, 860, 600, 150, BUTTONS["continue1"], BUTTONS["continue2"], BUTTONS["continue2"],
                           [all_sprites, button_group], cursor, None)
-    scroll2 = ScrollBox(1450, 65, 400, 700, 1450, 800, buttons, 5, 150)
-    StaticImage([all_sprites], IMAGES['woman'], 873, 188)
+    scroll2 = ScrollBox(1400, 130, 400, 700, 1450, 900, buttons, 5, 150,
+                        Slider(IMAGES['scrollslider'], [all_sprites], pos=(1850, 180)))
+    StaticImage([all_sprites], IMAGES['woman'], 873, 88)
     StaticImage([all_sprites], IMAGES['field'], 810, 700)
 
     while True:
@@ -25,7 +29,7 @@ def information_input(all_sprites, button_group, screen, cursor):
                 button_group.empty()
                 return 'menu'
 
-            if continue_btn.is_mouse_button_up(event):
+            if continue_btn.is_clicked:
                 if spinbox.get_value() and scroll1.get_collection() and scroll2.get_collection():
                     all_sprites.empty()
                     button_group.empty()
@@ -34,12 +38,16 @@ def information_input(all_sprites, button_group, screen, cursor):
                                    'characters_partner': ' '.join(scroll2.get_collection())}
                     restart_game()
                     save_new_player(player_data)
+                    BTN_SOUND.play()
                     return 'continue'
 
             for name in 'scroll1', 'scroll2', 'spinbox', 'button_group':
                 locals()[name].update(event)
 
         all_sprites.draw(screen)
+        print_text(screen, 70, 10, 'Ваши характеристики', 'black', FONTS['Pacifico-Regular-60'])
+        print_text(screen, 1200, 10, 'Характеристики партнёра', 'black', FONTS['Pacifico-Regular-60'])
+        print_text(screen, 800, 565, 'Ваш возраст', 'black', FONTS['Pacifico-Regular-60'])
         for name in 'scroll1', 'scroll2':
             locals()[name].render(screen, 'black', FONTS['Standard-35'], 32, 30)
         spinbox.render(screen, 'black', FONTS['RammettoOne-Regular-90'])
