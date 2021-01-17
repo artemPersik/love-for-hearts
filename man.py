@@ -1,6 +1,7 @@
 from constants import HAIRS, FACES, BODIES, PANTS, NAMES, FONTS, CHARACTERS, PROPERTIES, JOBS
 from random import random, choice, randint
 from configparser import ConfigParser
+from music import IVAN_SOUND, KONCH_SOUND
 from math import fabs
 import pygame
 
@@ -92,10 +93,12 @@ class Man:
         # Посхалочки))))
         if round(random(), 2) == 0.01:
             self.specifications = dict((key, 10) for key in self.specifications.keys())
+            IVAN_SOUND.play()
             self.description = 'Иван, 16 лет, реальный пацан, разбирается в мемах и хайповой моде. ' \
                                'Ищет горячую чику постарше.'
         elif round(random(), 2) == 0.01:
             self.specifications = dict((key, -10) for key in self.specifications.keys())
+            KONCH_SOUND.play()
             self.description = 'Ну что тут скажешь, конч за 500.'
 
     def update_description(self):
