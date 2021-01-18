@@ -5,6 +5,7 @@ from pygame.display import flip
 from pygame.event import get
 from constants import BUTTONS
 from player import Player
+from music import WIN_SOUND, LOSE_SOUND
 from GUI import Button
 
 
@@ -29,6 +30,18 @@ def main_game(all_sprites, button_group, man_group, screen, cursor):
                 man_group.empty()
                 return 'menu'
             button_group.update(event)
+        if all([i >= 100 for i in player.specifications.values()]):
+            all_sprites.empty()
+            button_group.empty()
+            man_group.empty()
+            WIN_SOUND.play()
+            return 'win'
+        if any([i <= 0 for i in player.specifications.values()]):
+            all_sprites.empty()
+            button_group.empty()
+            man_group.empty()
+            LOSE_SOUND.play()
+            return 'lose'
 
         screen.fill('#DF1479')
 

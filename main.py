@@ -1,4 +1,7 @@
 from GUI import Button, Cursor, Slider, VolumeSlider, AllSprites
+from authors import authors_screen
+from win_screen import win_screen
+from lose_screen import lose_screen
 from information_input import information_input
 from main_menu import main_menu
 from pause import pause_menu
@@ -24,20 +27,23 @@ def main():
     music_sausage()
     set_volume_all_sounds(get_volume_from_save())
     result = 'main menu'
-    #result = 'continue'
-    clock = pygame.time.Clock()
-    FPS = 60
 
     # Игровой цикл
     while True:
         if result == 'main menu':
-            result = main_menu(all_sprites, button_group, screen, cursor, clock, FPS)
+            result = main_menu(all_sprites, button_group, screen, cursor)
         if result == 'continue':
             result = main_game(all_sprites, button_group, man_group, screen, cursor)
-        if result == 'new game':
-            result = information_input(all_sprites, button_group, screen, cursor)
+        if result == 'new game' or result == 'restart':
+            result = information_input(all_sprites, button_group, screen, cursor, result)
         if result == 'menu':
             result = pause_menu(all_sprites, button_group, screen, cursor)
+        if result == 'win':
+            result = win_screen(all_sprites, button_group, screen, cursor)
+        if result == 'lose':
+            result = lose_screen(all_sprites, button_group, screen, cursor)
+        if result == 'authors':
+            result = authors_screen(all_sprites, button_group, screen, cursor)
 
 
 if __name__ == '__main__':

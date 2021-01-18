@@ -16,8 +16,8 @@ def music_sausage():
 def set_volume_all_sounds(volume):
     BTN_SOUND.set_volume(volume)
     KONCH_SOUND.set_volume(volume)
-    win_sound.set_volume(volume)
-    lose_sound.set_volume(volume)
+    WIN_SOUND.set_volume(volume)
+    LOSE_SOUND.set_volume(volume)
     IVAN_SOUND.set_volume(volume)
     pygame.mixer.music.set_volume(volume)
 
@@ -36,7 +36,7 @@ def music_album_of_bts():
 
 
 BTN_SOUND = pygame.mixer.Sound('data/music/sounds/btn_sound.wav')
-win_sound = pygame.mixer.Sound('data/music/sounds/win_sound.wav')
+WIN_SOUND = pygame.mixer.Sound('data/music/sounds/win_sound.wav')
 KONCH_SOUND = pygame.mixer.Sound('data/music/sounds/konch_sound.wav')
-lose_sound = pygame.mixer.Sound("data/music/sounds/lose_sound.wav")
+LOSE_SOUND = pygame.mixer.Sound("data/music/sounds/lose_sound.wav")
 IVAN_SOUND = pygame.mixer.Sound("data/music/sounds/ivan_sound.wav")
