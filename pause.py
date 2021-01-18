@@ -34,7 +34,7 @@ def pause_menu(all_sprites, button_group, screen, cursor):
                 button_group.empty()
                 save_settings(volume=volume_slider.get_volume())
                 BTN_SOUND.play()
-                return 'new game'
+                return 'restart'
             button_group.update(event)
             volume_slider.update(event)
 

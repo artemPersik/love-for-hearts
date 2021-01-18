@@ -5,18 +5,20 @@ from music import BTN_SOUND
 import pygame
 
 
-def main_menu(all_sprites, button_group, screen, cursor, clock, FPS):
+def main_menu(all_sprites, button_group, screen, cursor):
     is_new_game = check_null_in_save()
+    clock = pygame.time.Clock()
     indent = 250 if is_new_game else 200
     buttons_names = ([] if is_new_game else ['continue_b']) + ['new_game_b', 'options_b', 'authors_b', 'quit_b']
     buttons = {}
+    FPS = 50
 
     for i, name in enumerate(buttons_names):
         buttons[name] = Button(70, 65 + indent * i, 600, 150,
                                BUTTONS[f'{name[:-2]}1'], BUTTONS[f'{name[:-2]}2'], BUTTONS[f'{name[:-2]}2'],
                                [all_sprites, button_group], cursor, None)
 
-    #AnimatedSprite([all_sprites], IMAGES['heart'], 6, 2, 1100, 53)
+    animation = AnimatedSprite([all_sprites], IMAGES['heart'], 6, 2, 1100, 53)
     StaticImage([all_sprites], IMAGES["para"], 900, 53)
     buttons['quit_b'].set_func(quit)
 
@@ -34,9 +36,16 @@ def main_menu(all_sprites, button_group, screen, cursor, clock, FPS):
                 BTN_SOUND.play()
                 return 'continue'
 
+            if buttons['authors_b'].is_clicked:
+                all_sprites.empty()
+                button_group.empty()
+                BTN_SOUND.play()
+                return 'authors'
+
             button_group.update(event)
         screen.fill(pygame.Color("#DF1479"))
         all_sprites.draw(screen)
         cursor.update()
-        #clock.tick(FPS)
+        animation.update()
+        clock.tick(FPS)
         pygame.display.flip()

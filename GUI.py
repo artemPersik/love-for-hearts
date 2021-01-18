@@ -1,4 +1,4 @@
-from constants import CHARACTERS
+from constants import CHARACTERS, BUTTONS
 from music import BTN_SOUND, set_volume_all_sounds
 import pygame
 
@@ -31,8 +31,10 @@ class Cursor(pygame.sprite.Sprite):
 
 
 class StaticImage(pygame.sprite.Sprite):
-    def __init__(self, groups, image, pos_x, pos_y):
+    def __init__(self, groups, image, pos_x, pos_y, size=None):
         super().__init__(*groups)
+        if size is not None:
+            image = pygame.transform.scale(image, size)
         self.image = image
         self.rect = self.image.get_rect().move(pos_x, pos_y)
         self.groups = groups
@@ -68,7 +70,7 @@ class AnimatedSprite(pygame.sprite.Sprite):
 class Button(pygame.sprite.Sprite):
     # Ну тут тупа генератор, по названию переменных всё очевидно)
     def __init__(self, pos_x, pos_y, width, height, pass_image, direct_image, clicked_image,
-                 groups, cursor, func, is_visible=True):
+                 groups, cursor, func, is_visible=True, name=''):
         super().__init__(*groups)
 
         self.pass_image = pygame.transform.scale(pass_image, (width, height))
@@ -82,6 +84,7 @@ class Button(pygame.sprite.Sprite):
         self.pos = (pos_x, pos_y)
         self.cursor = cursor
         self.func = func
+        self.name = name
         self.width, self.height = width, height
         self.is_clicked = False
 
@@ -149,7 +152,7 @@ class Button(pygame.sprite.Sprite):
         return self.func
 
     def set_pass_image(self, image):
-        self.pass_image = image
+        self.pass_image = pygame.transform.scale(image, (self.width, self.height))
 
     def set_direct_image(self, image):
         self.direct_image = image
@@ -282,39 +285,16 @@ class ScrollBox:
     def update_buttons(self):
         self.visible_buttons = self.buttons[self.ind:self.ind + self.visible_count]
         for i, button in enumerate(self.buttons):
-            button.set_func(lambda x=self.characters_values[i]: self.collection.append(x)
-                if len(self.collection) < 5 and x not in self.collection else 0)
+            button.set_func(lambda x=self.characters_values[i], y=button:
+                            (self.collection.append(x), y.set_pass_image(BUTTONS[y.name + '2']))
+                            if x not in self.collection else
+                            (self.collection.remove(x), y.set_pass_image(BUTTONS[y.name + '1'])))
             if button in self.visible_buttons:
                 button.set_visible(True)
                 button.set_pos(self.pos_x, self.pos_y + self.indent * (i - self.ind))
             else:
                 button.set_visible(False)
                 button.set_pos(2000, 0)
-
-    def render(self, screen, color, font, symbols_on_line, indent):
-        text = ', '.join(self.collection).capitalize()
-        pos_x, pos_y = self.text_x, self.text_y
-        intro_text = []
-        line = ''
-
-        for i, word in enumerate(text.split()):
-            if len(line) + len(word) <= symbols_on_line:
-                line += f' {word}'
-            else:
-                intro_text.append(line[1:])
-                line = f' {word}'
-
-            if i == len(text.split()) - 1:
-                intro_text.append(line[1:])
-
-        for line in intro_text:
-            string_rendered = font.render(line, 1, color)
-            intro_rect = string_rendered.get_rect()
-            pos_y += indent
-            intro_rect.top = pos_y
-            intro_rect.x = pos_x
-            pos_y += intro_rect.height
-            screen.blit(string_rendered, intro_rect)
 
     def get_collection(self):
         return self.collection
@@ -358,4 +338,3 @@ class SpinBox:
 
     def set_value(self, value):
         self.value = value
-

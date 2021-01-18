@@ -91,12 +91,12 @@ class Man:
         self.update_description()
 
         # Посхалочки))))
-        if round(random(), 2) == 0.01:
+        if round(random(), 6) == 0.000001:
             self.specifications = dict((key, 10) for key in self.specifications.keys())
             IVAN_SOUND.play()
             self.description = 'Иван, 16 лет, реальный пацан, разбирается в мемах и хайповой моде. ' \
                                'Ищет горячую чику постарше.'
-        elif round(random(), 2) == 0.01:
+        elif round(random(), 6) == 0.000001:
             self.specifications = dict((key, -10) for key in self.specifications.keys())
             KONCH_SOUND.play()
             self.description = 'Ну что тут скажешь, конч за 500.'

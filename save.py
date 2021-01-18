@@ -65,6 +65,18 @@ def restart_game():
         config.write(configfile)
 
 
+def restart_player():
+    config = ConfigParser()
+    config.read('save.ini', encoding='utf8')
+    section = 'section_player'
+    keys = ['happiness_value', 'wealth_value', 'compatibility_value', 'character_value']
+    for key in keys:
+        config.set(section, key, 'null')
+
+    with open('save.ini', 'w', encoding='utf8') as configfile:
+        config.write(configfile)
+
+
 def check_null_in_save():
     config = ConfigParser()
     config.read('save.ini', encoding='utf8')
