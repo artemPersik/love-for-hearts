@@ -59,7 +59,7 @@ def main_game(all_sprites, button_group, man_group, screen, cursor):
         print_text(screen, 70, 10, 'Ваши характеристики', 'black', FONTS['Pacifico-Regular-60'])
         print_text(screen, 1200, 10, 'Характеристики парнётра', 'black', FONTS['Pacifico-Regular-60'])
         print_text(screen, 70, 800, f'Ваш баланс: {player.money}', 'black', FONTS['Pacifico-Regular-60'])
-        print_text(screen, 1098, 1010, f'-10 сердец', 'black', FONTS['Pacifico-Regular-30'])
+        print_text(screen, 1098, 1010, '-10 сердец', 'black', FONTS['Pacifico-Regular-30'])
         if man.reject_count < 2:
             print_text(screen, 686, 1010, '+3 сердца', 'black', FONTS['Pacifico-Regular-30'])
         else:

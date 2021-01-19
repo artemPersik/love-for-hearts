@@ -22,7 +22,7 @@ def load_image(name, path='', colorkey=None):
 
 # Функция загрузки списка одежды из файла
 def load_clothes(name):
-    fullname = join(f'./data/lists_clothes', name)
+    fullname = join('./data/lists_clothes', name)
     if not isfile(fullname):
         print(f"Файл с одеждой '{fullname}' не найден")
         exit()

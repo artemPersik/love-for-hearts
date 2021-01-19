@@ -85,7 +85,8 @@ class Man:
         self.character_value, self.characters = self.create_characters()
         self.compatibility_value = self.create_compatibility(self.player)
         self.happiness_value = (self.compatibility_value + self.character_value + self.wealth_value) // 3
-        self.cost = round((self.compatibility_value + self.happiness_value + self.character_value + self.wealth_value) / 4) * 10
+        self.cost = round((self.compatibility_value + self.happiness_value + self.character_value + self.wealth_value)
+                          / 4) * 10
 
         # Обновление характеристик и описания
         self.update_specifications()
