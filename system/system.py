@@ -22,7 +22,7 @@ def load_image(name, path='', colorkey=None):
 
 # Функция загрузки списка одежды из файла
 def load_clothes(name):
-    fullname = join(f'data/lists_clothes', name)
+    fullname = join(f'./data/lists_clothes', name)
     if not isfile(fullname):
         print(f"Файл с одеждой '{fullname}' не найден")
         exit()
@@ -33,7 +33,7 @@ def load_clothes(name):
 
 
 def load_buttons_images():
-    path = 'data/images/buttons'
+    path = './data/images/buttons'
     names = [(name[:-4], name) for name in listdir(path) if name[-3:] == 'png']
     return [(key, load_image(value, '/buttons')) for key, value in names]
 

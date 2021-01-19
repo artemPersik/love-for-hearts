@@ -1,9 +1,9 @@
 from pygame.display import flip
 from pygame.event import get
-from constants import BUTTONS, IMAGES
-from music import BTN_SOUND
-from save import restart_player
-from GUI import Button, StaticImage
+from system.constants import BUTTONS, IMAGES
+from system.music import BTN_SOUND
+from system.save import restart_player
+from system.GUI import Button, StaticImage
 
 
 # Экран основной игры
@@ -14,7 +14,7 @@ def authors_screen(all_sprites, button_group, screen, cursor):
 
     while True:
         for event in get():
-            if continue_button.is_clicked:
+            if continue_button.is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
                 restart_player()

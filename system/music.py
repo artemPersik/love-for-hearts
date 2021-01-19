@@ -3,13 +3,13 @@ from random import choice
 
 pygame.mixer.pre_init(44100, -16, 2, 512)
 pygame.init()
-BTS_ALBUM = [f"data/music/ost/BTS_{i}.wav" for i in range(10)]
+BTS_ALBUM = [f"./data/music/ost/BTS_{i}.wav" for i in range(10)]
 
 # Это функцию можно вызвать в начале игры и дальше не париться
 
 
 def music_sausage():
-    pygame.mixer.music.load('data/music/ost/Sausage.wav')
+    pygame.mixer.music.load('./data/music/ost/Sausage.wav')
     pygame.mixer.music.play(-1)
 
 
@@ -35,8 +35,8 @@ def music_album_of_bts():
     pygame.mixer.music.play()
 
 
-BTN_SOUND = pygame.mixer.Sound('data/music/sounds/btn_sound.wav')
-WIN_SOUND = pygame.mixer.Sound('data/music/sounds/win_sound.wav')
-KONCH_SOUND = pygame.mixer.Sound('data/music/sounds/konch_sound.wav')
-LOSE_SOUND = pygame.mixer.Sound("data/music/sounds/lose_sound.wav")
-IVAN_SOUND = pygame.mixer.Sound("data/music/sounds/ivan_sound.wav")
+BTN_SOUND = pygame.mixer.Sound('./data/music/sounds/btn_sound.wav')
+WIN_SOUND = pygame.mixer.Sound('./data/music/sounds/win_sound.wav')
+KONCH_SOUND = pygame.mixer.Sound('./data/music/sounds/konch_sound.wav')
+LOSE_SOUND = pygame.mixer.Sound("./data/music/sounds/lose_sound.wav")
+IVAN_SOUND = pygame.mixer.Sound("./data/music/sounds/ivan_sound.wav")
