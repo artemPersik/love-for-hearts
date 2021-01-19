@@ -1,13 +1,13 @@
-from GUI import SpinBox, ScrollBox, Button, StaticImage, Slider
-from constants import SCROLL_BUTTONS_ACTIVE, SCROLL_BUTTONS_PASS, FONTS, IMAGES, BUTTONS
-from save import save_new_player, restart_game
-from music import BTN_SOUND
-from system import print_text
+from system.GUI import SpinBox, ScrollBox, Button, StaticImage, Slider, AnimatedSprite
+from system.constants import SCROLL_BUTTONS_ACTIVE, SCROLL_BUTTONS_PASS, FONTS, IMAGES, BUTTONS
+from system.save import save_new_player, restart_game
+from system.music import BTN_SOUND
+from system.system import print_text
 import pygame
 
 
 def information_input(all_sprites, button_group, screen, cursor, result):
-    spinbox = SpinBox(810, 700, 290, 150)
+    spinbox = SpinBox(810, 700, 290, 150, StaticImage([all_sprites], IMAGES['stick'], 0, 0))
     buttons = [Button(0, 0, 400, 100, BUTTONS[passs], BUTTONS[active], BUTTONS[active], [all_sprites, button_group],
                       cursor, None, name=passs[:-1])
                for passs, active in zip(SCROLL_BUTTONS_PASS, SCROLL_BUTTONS_ACTIVE)]
@@ -22,6 +22,10 @@ def information_input(all_sprites, button_group, screen, cursor, result):
                         Slider(IMAGES['scrollslider'], [all_sprites], pos=(1850, 180)))
     StaticImage([all_sprites], IMAGES['woman'], 873, 88)
     StaticImage([all_sprites], IMAGES['field'], 810, 700)
+    StaticImage([all_sprites], IMAGES['arrow_up'], 65, 130)
+    StaticImage([all_sprites], IMAGES['arrow_down'], 65, 800)
+    StaticImage([all_sprites], IMAGES['arrow_up'], 1845, 130)
+    StaticImage([all_sprites], IMAGES['arrow_down'], 1845, 800)
 
     while True:
         screen.fill(pygame.Color("#DF1479"))
@@ -31,7 +35,7 @@ def information_input(all_sprites, button_group, screen, cursor, result):
                 button_group.empty()
                 return 'main menu' if result == 'new game' else 'menu'
 
-            if continue_btn.is_clicked:
+            if continue_btn.is_mouse_button_up(event):
                 if spinbox.get_value() and scroll1.get_collection() and scroll2.get_collection():
                     all_sprites.empty()
                     button_group.empty()
@@ -52,5 +56,4 @@ def information_input(all_sprites, button_group, screen, cursor, result):
         print_text(screen, 793, 565, 'Ваш возраст', 'black', FONTS['Pacifico-Regular-60'])
         spinbox.render(screen, 'black', FONTS['RammettoOne-Regular-90'])
         cursor.update()
-
         pygame.display.flip()

@@ -1,5 +1,5 @@
-from constants import CHARACTERS, BUTTONS
-from music import BTN_SOUND, set_volume_all_sounds
+from system.constants import CHARACTERS, BUTTONS, CHARACTERS_LIST
+from system.music import BTN_SOUND, set_volume_all_sounds
 import pygame
 
 
@@ -10,6 +10,7 @@ class AllSprites(pygame.sprite.Group):
         surface_blit = surface.blit
         sprites.sort(key=lambda x: isinstance(x, Slider))
         sprites.sort(key=lambda x: isinstance(x, Cursor))
+        sprites.sort(key=lambda x: isinstance(x, StaticImage))
         for spr in sprites:
             self.spritedict[spr] = surface_blit(spr.image, spr.rect)
         self.lostsprites = []
@@ -41,6 +42,16 @@ class StaticImage(pygame.sprite.Sprite):
 
     def move_to(self, pos):
         self.rect.x, self.rect.y = pos
+
+    def set_visible(self, value):
+        if value:
+            for group in self.groups:
+                if self not in group:
+                    group.add(self)
+        else:
+            for group in self.groups:
+                if self in group:
+                    group.remove(self)
 
 
 class AnimatedSprite(pygame.sprite.Sprite):
@@ -122,15 +133,11 @@ class Button(pygame.sprite.Sprite):
 
     # Проверка на нажатие мыши
     def is_mouse_button_down(self):
-        if pygame.mouse.get_pressed(3)[0] and pygame.sprite.collide_mask(self, self.cursor):
-            return True
-        return False
+        return pygame.mouse.get_pressed(3)[0] and pygame.sprite.collide_mask(self, self.cursor)
 
     # Проверка на на отпускае мыши
     def is_mouse_button_up(self, event):
-        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and pygame.sprite.collide_mask(self, self.cursor):
-            return True
-        return False
+        return event.type == pygame.MOUSEBUTTONUP and event.button == 1 and pygame.sprite.collide_mask(self, self.cursor) and self.is_clicked
 
     # Куча методов для изменения и получения переменных экземпляра класса
     def get_pos(self):
@@ -255,7 +262,7 @@ class ScrollBox:
         self.buttons, self.indent = buttons, indent
         self.visible_count, self.ind = visible_count, 0
         self.visible_buttons = self.buttons[self.ind:self.ind + self.visible_count]
-        self.characters_values = [item for value in CHARACTERS.values() for item in value]
+        self.characters_values = CHARACTERS_LIST[:]
         self.collection = []
         self.slider = slider
 
@@ -304,9 +311,10 @@ class ScrollBox:
 
 
 class SpinBox:
-    def __init__(self, pos_x, pos_y, width, height):
+    def __init__(self, pos_x, pos_y, width, height, stick=None):
         self.pos_x, self.pos_y, self.width, self.height = pos_x, pos_y, width, height
         self.rect = pygame.rect.Rect(pos_x, pos_y, width, height)
+        self.stick = stick
         self.flag = False
         self.value = ''
 
@@ -326,12 +334,20 @@ class SpinBox:
                     if events[0].unicode in [str(i) for i in range(10)]:
                         self.value += events[0].unicode
 
+        if self.stick is not None:
+            self.stick.set_visible(self.flag)
+            self.stick.update()
+
     def render(self, screen, color, font):
         string_rendered = font.render(self.value, 1, color)
         intro_rect = string_rendered.get_rect()
         intro_rect.top = self.pos_y
         intro_rect.x = self.pos_x + self.width // 2 - intro_rect.width // 2
         screen.blit(string_rendered, intro_rect)
+
+        if self.stick is not None:
+            self.stick.rect.x = intro_rect.x + intro_rect.width
+            self.stick.rect.y = intro_rect.y + 10
 
     def get_value(self):
         return self.value

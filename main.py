@@ -1,14 +1,14 @@
-from GUI import Button, Cursor, Slider, VolumeSlider, AllSprites
-from authors import authors_screen
-from win_screen import win_screen
-from lose_screen import lose_screen
-from information_input import information_input
-from main_menu import main_menu
-from pause import pause_menu
-from constants import IMAGES
-from game import main_game
-from music import music_sausage, set_volume_all_sounds
-from save import get_volume_from_save
+from system.GUI import Button, Cursor, Slider, VolumeSlider, AllSprites
+from scenes.authors import authors_screen
+from scenes.win_screen import win_screen
+from scenes.lose_screen import lose_screen
+from scenes.information_input import information_input
+from scenes.main_menu import main_menu
+from scenes.pause import pause_menu
+from system.constants import IMAGES
+from scenes.game import main_game
+from system.music import music_sausage, set_volume_all_sounds
+from system.save import get_volume_from_save
 import pygame
 
 
@@ -30,8 +30,8 @@ def main():
 
     # Игровой цикл
     while True:
-        if result == 'main menu':
-            result = main_menu(all_sprites, button_group, screen, cursor)
+        if result == 'main menu' or result == 'main menu with restart':
+            result = main_menu(all_sprites, button_group, screen, cursor, result)
         if result == 'continue':
             result = main_game(all_sprites, button_group, man_group, screen, cursor)
         if result == 'new game' or result == 'restart':

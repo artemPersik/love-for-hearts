@@ -1,15 +1,19 @@
-from GUI import Button, AnimatedSprite, StaticImage
-from constants import IMAGES, BUTTONS
-from save import check_null_in_save
-from music import BTN_SOUND
+from system.GUI import Button, AnimatedSprite, StaticImage
+from system.constants import IMAGES, BUTTONS
+from system.save import check_null_in_save, restart_player
+from system.music import BTN_SOUND
 import pygame
 
 
-def main_menu(all_sprites, button_group, screen, cursor):
+def main_menu(all_sprites, button_group, screen, cursor, result):
     is_new_game = check_null_in_save()
     clock = pygame.time.Clock()
-    indent = 250 if is_new_game else 200
-    buttons_names = ([] if is_new_game else ['continue_b']) + ['new_game_b', 'options_b', 'authors_b', 'quit_b']
+    if result != 'main menu with restart':
+        indent = 350 if is_new_game else 250
+        buttons_names = ([] if is_new_game else ['continue_b']) + ['new_game_b', 'authors_b', 'quit_b']
+    else:
+        indent = 250
+        buttons_names = ['restart_b', 'new_game_b', 'authors_b', 'quit_b']
     buttons = {}
     FPS = 50
 
@@ -24,19 +28,26 @@ def main_menu(all_sprites, button_group, screen, cursor):
 
     while True:
         for event in pygame.event.get():
-            if buttons['new_game_b'].is_clicked:
+            if buttons['new_game_b'].is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
                 BTN_SOUND.play()
                 return 'new game'
 
-            if 'continue_b' in buttons and buttons['continue_b'].is_clicked:
+            if 'continue_b' in buttons and buttons['continue_b'].is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
                 BTN_SOUND.play()
                 return 'continue'
 
-            if buttons['authors_b'].is_clicked:
+            if 'restart_b' in buttons and buttons['restart_b'].is_mouse_button_up(event):
+                all_sprites.empty()
+                button_group.empty()
+                restart_player()
+                BTN_SOUND.play()
+                return 'continue'
+
+            if buttons['authors_b'].is_mouse_button_up(event):
                 all_sprites.empty()
                 button_group.empty()
                 BTN_SOUND.play()

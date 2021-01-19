@@ -1,8 +1,7 @@
-from constants import HAIRS, FACES, BODIES, PANTS, NAMES, FONTS, CHARACTERS, PROPERTIES, JOBS
-from random import random, choice, randint
+from system.constants import HAIRS, FACES, BODIES, PANTS, NAMES, FONTS, CHARACTERS, PROPERTIES, JOBS, CHARACTERS_DICT
+from random import random, choice, randint, sample
 from configparser import ConfigParser
-from music import IVAN_SOUND, KONCH_SOUND
-from math import fabs
+from system.music import IVAN_SOUND, KONCH_SOUND
 import pygame
 
 
@@ -64,55 +63,73 @@ class Man:
     def __init__(self, body, face, pants, hair, player, man_group):
         self.body, self.face, self.pants, self.hair = body, face, pants, hair
         self.player, self.man_group = player, man_group
+        self.reject_count = 0
         self.update_man()  # создание мужика
         self.load_from_save()  # загрузка мужика из сохранения
 
-    # Функция создания/обновления мужика
+    # Функция создания обновления мужика
     def update_man(self):
         self.man_group.update()  # смена картинок на рандомные у мужика
         self.age = randint(16, 60)  # рандомный возраст
         self.name = choice(NAMES)  # рандомное имя
         self.gender = 'M'  # пол мужичка
 
-        # Хз, что за дичь писал не я)))
-        self.character_full = self.create_character()
-        self.wealth_full = self.create_wealth()
-        self.wealth = self.wealth_full[0]
-        self.character = self.character_full[1]
-        self.compatibility = self.create_compatibility(self.player, self.gender, self.character_full[0])
-        self.happines = self.create_happiness()
+        self.wealth_value = 0
 
-        self.job = self.wealth_full[1]
-        self.property = self.wealth_full[2]
-        self.characters = self.character_full[0]
+        self.job = choice(list(JOBS.keys()))
+        self.wealth_value += round(JOBS[self.job] * 2.5)
+
+        self.property = choice(list(PROPERTIES.keys()))
+        self.wealth_value += round(PROPERTIES[self.property] * 2.5)
+
+        self.character_value, self.characters = self.create_characters()
+        self.compatibility_value = self.create_compatibility(self.player)
+        self.happiness_value = (self.compatibility_value + self.character_value + self.wealth_value) // 3
+        self.cost = round((self.compatibility_value + self.happiness_value + self.character_value + self.wealth_value) / 4) * 10
 
         # Обновление характеристик и описания
         self.update_specifications()
         self.update_description()
 
         # Посхалочки))))
-        if round(random(), 6) == 0.000001:
+        if round(random(), 9) == 0.000_000_001:
             self.specifications = dict((key, 10) for key in self.specifications.keys())
             IVAN_SOUND.play()
             self.description = 'Иван, 16 лет, реальный пацан, разбирается в мемах и хайповой моде. ' \
                                'Ищет горячую чику постарше.'
-        elif round(random(), 6) == 0.000001:
+        elif round(random(), 9) == 0.000_000_001:
             self.specifications = dict((key, -10) for key in self.specifications.keys())
             KONCH_SOUND.play()
             self.description = 'Ну что тут скажешь, конч за 500.'
 
+    def choice_age_years(self, age):
+        if len(str(age)) >= 2:
+            if str(age)[-2:] in ('11', '12', '13', '14'):
+                return 'лет'
+            if str(age)[-1] in ('2', '3', '4'):
+                return 'года'
+            if str(age)[-1] == '1':
+                return 'год'
+            return 'лет'
+        else:
+            if str(age)[-1] in ('2', '3', '4'):
+                return 'года'
+            if str(age)[-1] == '1':
+                return 'год'
+            return 'лет'
+
     def update_description(self):
-        self.description = f'{self.name}, {self.age} годов, работет {self.job}, ' \
-                           f'имеет {self.property}, характером он {", ".join(self.characters)}'
+        self.description = f'{self.name}, {self.age} {self.choice_age_years(self.age)}, работет {self.job}, ' \
+                           f'имеет {self.property}, характером он {", ".join(self.characters)}.'
 
     def update_specifications(self):
-        self.specifications = {'Счастье': int(self.happines), 'Достаток': int(self.wealth),
-                               'Совместимость': int(self.compatibility), 'Характер': int(self.character)}
+        self.specifications = {'Счастье': int(self.happiness_value), 'Достаток': int(self.wealth_value),
+                               'Совместимость': int(self.compatibility_value), 'Характер': int(self.character_value)}
 
     # Функция загрузки мужичка из сохранения
     def load_from_save(self):
         config = ConfigParser()
-        config.read('save.ini', encoding='utf8')
+        config.read('./data/save.ini', encoding='utf8')
         section = 'section_man'
         keys = ['gender', 'age', 'name', 'characters', 'job', 'property', 'happiness_value', 'wealth_value',
                 'compatibility_value', 'character_value', 'body', 'face', 'hair', 'pants']
@@ -125,11 +142,18 @@ class Man:
 
     # Функция для принятия мужичка
     def accept_man(self):
-        self.player.accept(self.specifications)
-        self.update_man()
+        self.reject_count = 0
+        if self.player.money >= 10:
+            self.player.money -= 10
+            self.player.accept(self.specifications)
+            self.update_man()
 
     # Функция для отказа мужичку
     def reject_man(self):
+        self.reject_count += 1
+        self.player.money += 3
+        if self.reject_count > 2:
+            self.player.specifications = {key: value - 15 for key, value in self.player.specifications.items()}
         self.update_man()
 
     # Функция для вывода описания и характеристик
@@ -140,8 +164,9 @@ class Man:
     # Функция для вывода характеристик
     def render_specifications(self, screen):
         text = [f'{item[0]}: {item[1]}' for item in self.specifications.items()]
+        text = [item[0] for item in self.specifications.items()]
         font = FONTS['Pacifico-Regular-60']
-        text_coord = 10
+        text_coord = 70
         for line in text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
@@ -150,6 +175,11 @@ class Man:
             intro_rect.x = 1258
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
+
+            radius = 10 if abs(self.specifications[line]) <= 4 else 15
+            center_x = 10 + intro_rect.x + intro_rect.width + radius
+            center_y = intro_rect.y + intro_rect.height // 2 + radius // 2
+            pygame.draw.circle(screen, 'black', (center_x, center_y), radius)
 
     # Функция для вывода описания
     def render_description(self, screen):
@@ -167,7 +197,7 @@ class Man:
                 text.append(line[1:])
 
         font = FONTS['Pacifico-Regular-30']
-        text_coord = 600
+        text_coord = 640
         for line in text:
             string_rendered = font.render(line, 1, pygame.Color('black'))
             intro_rect = string_rendered.get_rect()
@@ -178,112 +208,36 @@ class Man:
             screen.blit(string_rendered, intro_rect)
 
     # Не моя компитенция)))
-    def create_compatibility(self, player, gender, character_p):
-        compatibility_prom = 0
-        if gender != player.gender_partner:
+    def create_compatibility(self, player):
+        if player.gender_partner != self.gender:
             return -10
 
-        for i in player.characters_partner:
-            if i in character_p:
-                compatibility_prom += 2
+        compatibility_value = 0
+        a = [i == j for j in self.characters for i in player.characters_partner]
+        b = [CHARACTERS_DICT[i] == j for j in self.characters for i in player.characters_partner]
+        compatibility_value += a.count(True) * 3
+        compatibility_value += b.count(True) * -3
 
-        for i in player.characters:
-            if i in CHARACTERS["positive"]:
-                ind = CHARACTERS["positive"].index(i)
-                for j in character_p:
-                    if j in CHARACTERS["negative"]:
-                        if CHARACTERS["negative"].index(j) == ind:
-                            compatibility_prom -= 1
-
-        for i in player.characters:
-            if i in CHARACTERS["negative"]:
-                ind = CHARACTERS["negative"].index(i)
-                for j in character_p:
-                    if j in CHARACTERS["positive"]:
-                        if CHARACTERS["positive"].index(j) == ind:
-                            compatibility_prom -= 1
-
-        if self.age - player.age >= fabs(5):
-            compatibility_prom += 2
+        age_difference = player.age - self.age
+        if age_difference // 10 != 0:
+            compatibility_value -= age_difference // 10
         else:
-            compatibility_prom -= 2
+            compatibility_value += age_difference % 10
+        return compatibility_value
 
-        compatibility_prom + randint(-3, 3)
-
-        if compatibility_prom < -10:
-            return -10
-        elif compatibility_prom > 10:
-            return 10
-        else:
-            return compatibility_prom
-
-    # Не моя компитенция)))
-    def create_character(self):
-
-        character_negative = []
-        character_passive = []
-        character_positive = []
-
-        for _ in range(randint(1, 7)):
-            character_negative.append(choice(CHARACTERS["negative"]))
-        for _ in range(randint(1, 13)):
-            ind = randint(1, len(CHARACTERS["negative"]) - 1)
-            for i in character_negative:
-                if ind != CHARACTERS["negative"].index(i):
-                    character_positive.append(CHARACTERS["positive"][ind])
-        for _ in range(randint(1, 7)):
-            character_passive.append(choice(CHARACTERS["passive"]))
-        character_des = character_positive + character_passive + character_negative
-        character = len(set(character_negative)) * -2 + len(set(character_passive)) * 1 + len(
-            set(character_positive)) * 2
-        if character > 10:
-            character = 10
-        elif character < -10:
-            character = -10
-        return set(character_des), character
-
-    # Не моя компитенция)))
-    def create_wealth(self):
-        wealth_prom = 0
-        property_prom = ""
-        job_prom = ""
-        procent = randint(0, 101)
-        procent2 = randint(0, 101)
-        if procent <= 20:
-            wealth_prom -= 5
-            property_prom = (choice(PROPERTIES["low"]))
-        elif 20 < procent <= 90:
-            wealth_prom += 3
-            property_prom = (choice(PROPERTIES["medium"]))
-        elif procent > 90:
-            wealth_prom += 5
-            property_prom = (choice(PROPERTIES["high"]))
-
-        if procent2 <= 20:
-            wealth_prom -= 5
-            job_prom = (choice(JOBS["beggar"]))
-        elif procent2 > 20 and procent <= 90:
-            wealth_prom += 3
-            job_prom = (choice(JOBS["medium"]))
-        elif procent2 > 90:
-            wealth_prom += 5
-            job_prom = (choice(JOBS["high"]))
-
-        return wealth_prom, job_prom, property_prom
-
-    # Не моя компитенция)))
-    def create_happiness(self):
-        happiness = int(self.compatibility // 2 + self.wealth // 3 + self.character // 3)
-        if happiness < -10:
-            happiness = -10
-        elif happiness > 10:
-            happiness = 10
-        return happiness
+    def create_characters(self):
+        characters = sample(CHARACTERS, randint(3, 7))
+        character_value = 0
+        for i, character in enumerate(characters):
+            ind = randint(0, 1)
+            character_value += 1 * 2 * (ind if ind != 0 else -1)
+            characters[i] = character[ind]
+        return character_value, characters
 
     # Функция сохранения мужичка
     def save_progress(self):
         config = ConfigParser()
-        config.read('save.ini', encoding='utf8')
+        config.read('./data/save.ini', encoding='utf8')
         section = 'section_man'
         # хайповй список характеристик мужичка
         values = [('gender', self.gender), ('age', str(self.age)), ('name', self.name),
@@ -298,7 +252,7 @@ class Man:
         for value1, value2 in values:
             config.set(section, value1, value2)
 
-        with open('save.ini', 'w', encoding='utf8') as configfile:
+        with open('./data/save.ini', 'w', encoding='utf8') as configfile:
             config.write(configfile)
 
     # Куча методов для изменения характеристик мужичка
