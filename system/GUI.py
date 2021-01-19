@@ -1,4 +1,4 @@
-from system.constants import CHARACTERS, BUTTONS, CHARACTERS_LIST
+from system.constants import BUTTONS, CHARACTERS_LIST
 from system.music import BTN_SOUND, set_volume_all_sounds
 import pygame
 
@@ -137,7 +137,8 @@ class Button(pygame.sprite.Sprite):
 
     # Проверка на на отпускае мыши
     def is_mouse_button_up(self, event):
-        return event.type == pygame.MOUSEBUTTONUP and event.button == 1 and pygame.sprite.collide_mask(self, self.cursor) and self.is_clicked
+        return event.type == pygame.MOUSEBUTTONUP and event.button == 1 and \
+               pygame.sprite.collide_mask(self, self.cursor) and self.is_clicked
 
     # Куча методов для изменения и получения переменных экземпляра класса
     def get_pos(self):

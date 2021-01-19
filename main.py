@@ -1,4 +1,4 @@
-from system.GUI import Button, Cursor, Slider, VolumeSlider, AllSprites
+from system.GUI import Cursor, AllSprites
 from scenes.authors import authors_screen
 from scenes.win_screen import win_screen
 from scenes.lose_screen import lose_screen

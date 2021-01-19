@@ -1,4 +1,4 @@
-from system.GUI import SpinBox, ScrollBox, Button, StaticImage, Slider, AnimatedSprite
+from system.GUI import SpinBox, ScrollBox, Button, StaticImage, Slider
 from system.constants import SCROLL_BUTTONS_ACTIVE, SCROLL_BUTTONS_PASS, FONTS, IMAGES, BUTTONS
 from system.save import save_new_player, restart_game
 from system.music import BTN_SOUND
