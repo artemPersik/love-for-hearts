@@ -1,4 +1,11 @@
-/faces/ face1.png
-/faces/ face2.png
-/faces/ face3.png
-/faces/ face4.png
+/faces/
+face1.png
+face2.png
+face3.png
+face4.png
+face5.png
+face6.png
+face7.png
+face8.png
+face9.png
+face10.png
